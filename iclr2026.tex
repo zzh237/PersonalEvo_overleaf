@@ -29,7 +29,7 @@
 \newtheorem*{proposition*}{Proposition}
 \newtheorem*{corollary*}{Corollary}
 \newtheorem*{remark*}{Remark}
-
+\newcommand{\zach}[1]{{\color{blue}#1}}
 
 \title{Hyper-Ridge PersonalEvo: Meta-Learning the Archive Geometry for Provable Personalized Routing}
 % Authors must not appear in the submitted version. They should be hidden
@@ -123,7 +123,7 @@ Building on this base, we introduce \emph{Hyper-Ridge PersonalEvo}, which replac
 
 \label{sec:intro}
 
-Modern LLM agents increasingly choose among collections of prompts, skills, tools, and workflows instead of relying on one fixed policy. We call such a collection an \emph{archive} and each deployable entry a \emph{candidate}. Personalization methods learn user profiles and preference-conditioned behavior \citep{salemi2023lamp,zhao2025prefeval,personalized_agent_pabf}; prompt and agent evolution methods search for stronger candidates \citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp}; and routing methods choose among available models or policies at inference time \citep{ong2024routellm,hu2024routerbench,li2025llmbandit,tsai2026neuralucb}. These lines of work address three related decisions: what a user prefers, how the archive should improve, and which candidate should handle the next request. A personalized self-evolving agent must make all three decisions together.
+Modern LLM agents increasingly choose among collections of prompts, skills, tools, and workflows instead of relying on one fixed policy. We call such a collection an \emph{archive} and each deployable entry a \emph{candidate}. Personalization methods learn user profiles and preference-conditioned behavior \citep{salemi2023lamp,zhao2025prefeval,personalized_agent_pabf}; prompt and agent evolution methods search for stronger candidates \citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp}; and routing methods choose among available models or policies at inference time \citep{ong2024routellm,hu2024routerbench,li2025llmbandit,tsai2026neuralucb}. These lines of work address three related decisions: what a user prefers, how the archive should improve, and which candidate should handle the next request.
 
 Consider a support agent whose archive contains formal and casual policies for refund and shipping requests. Serving every user the best policy on average discards this useful diversity. A personalized router can learn which policy works for each user, but it must first try candidates whose value is uncertain. Archive growth makes this cost recur: whenever the agent adds a mutation after a failure, a conventional bandit sees a new arm and starts learning it from scratch. Yet the candidates are related. What the router learns about formality from a refund policy should inform a formal shipping policy, even though the two policies should retain different reward models. Archive growth therefore creates a tension: it can add better candidates while also adding enough exploration to erase their benefit.
 
