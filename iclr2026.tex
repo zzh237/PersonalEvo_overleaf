@@ -29,7 +29,7 @@
 \newtheorem*{proposition*}{Proposition}
 \newtheorem*{corollary*}{Corollary}
 \newtheorem*{remark*}{Remark}
-
+\newcommand{\zach}[1]{{\color{blue}#1}}
 
 \title{Hyper-Ridge PersonalEvo: Meta-Learning the Archive Geometry for Provable Personalized Routing}
 % Authors must not appear in the submitted version. They should be hidden
@@ -123,7 +123,7 @@ Building on this base, we introduce \emph{Hyper-Ridge PersonalEvo}, which replac
 
 \label{sec:intro}
 
-Personalized agents are increasingly built from libraries of reusable behaviors rather than a single fixed prompt or policy. Personalization methods learn user profiles and preference-conditioned behavior \citep{salemi2023lamp,zhao2025prefeval,personalized_agent_pabf}; prompt and agent evolution methods search for stronger prompts, skills, or workflows \citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp}; and routing methods choose among models or policies at inference time \citep{ong2024routellm,hu2024routerbench,li2025llmbandit,tsai2026neuralucb}. These lines of work answer complementary questions: what a user prefers, how a library should improve, and which available component should answer a request. A practical self-evolving agent must answer all three at once.
+Personalized agents are increasingly built from libraries of reusable behaviors rather than a single fixed prompt or policy. Personalization methods learn user profiles and preference-conditioned behavior \citep{salemi2023lamp,zhao2025prefeval,personalized_agent_pabf}; prompt and agent evolution methods search for stronger prompts, skills, or workflows \citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp}; and routing methods choose among models or policies at inference time \citep{ong2024routellm,hu2024routerbench,li2025llmbandit,tsai2026neuralucb}. These lines of work answer complementary questions: what a user prefers, how a library should improve, and which available component should answer a request. 
 
 Consider a support agent whose library contains formal and casual variants for refund and shipping requests. Different users prefer different tones, so deploying the single best reply policy to everyone wastes useful diversity. The agent can instead learn a personalized router, but doing so requires trying candidates whose value for a user is still uncertain. The problem becomes harder when the agent adds a new mutation after a failure: a conventional bandit treats that candidate as a new arm and pays to learn it from scratch. This is particularly wasteful because the candidates are related. The effect of formality learned from a refund reply is informative about a formal shipping reply, even though the two candidates should not be collapsed into the same policy.
 
