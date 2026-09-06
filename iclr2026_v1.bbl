@@ -5,16 +5,14 @@
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[Abbasi-Yadkori et~al.(2011)Abbasi-Yadkori, P{\'a}l, and
-  Szepesv{\'a}ri]{abbasi2011oful}
+\bibitem[Abbasi-Yadkori et~al.(2011)Abbasi-Yadkori, P{\'a}l, and Szepesv{\'a}ri]{abbasi2011oful}
 Yasin Abbasi-Yadkori, D{\'a}vid P{\'a}l, and Csaba Szepesv{\'a}ri.
 \newblock Improved algorithms for linear stochastic bandits.
 \newblock \emph{Advances in Neural Information Processing Systems}, 24, 2011.
 
 \bibitem[Agrawal et~al.(2025)Agrawal, Tan, et~al.]{agrawal2025geparp}
 Lakshya~A. Agrawal, Shangyin Tan, et~al.
-\newblock {GEPA}: Reflective prompt evolution can outperform reinforcement
-  learning.
+\newblock {GEPA}: Reflective prompt evolution can outperform reinforcement learning.
 \newblock \emph{ArXiv}, abs/2507.19457, 2025.
 
 \bibitem[Chu et~al.(2011)Chu, Li, Reyzin, and Schapire]{chu2011linucb}
@@ -22,28 +20,19 @@ Wei Chu, Lihong Li, Lev Reyzin, and Robert Schapire.
 \newblock Contextual bandits with linear payoff functions.
 \newblock In \emph{Proceedings of AISTATS}, 2011.
 
-\bibitem[Fernando et~al.(2023)Fernando, Banarse, Michalewski, Osindero, and
-  Rockt{\"a}schel]{fernando2023promptbreeder}
-Chrisantha Fernando, Dylan Banarse, Henryk Michalewski, Simon Osindero, and Tim
-  Rockt{\"a}schel.
-\newblock Promptbreeder: Self-referential self-improvement via prompt
-  evolution.
+\bibitem[Fernando et~al.(2023)Fernando, Banarse, Michalewski, Osindero, and Rockt{\"a}schel]{fernando2023promptbreeder}
+Chrisantha Fernando, Dylan Banarse, Henryk Michalewski, Simon Osindero, and Tim Rockt{\"a}schel.
+\newblock Promptbreeder: Self-referential self-improvement via prompt evolution.
 \newblock \emph{arXiv preprint arXiv:2309.16797}, 2023.
 
-\bibitem[Guo et~al.(2024)Guo, Wang, Guo, Li, Song, Tan, Liu, Bian, and
-  Yang]{guo2024evoprompt}
-Qingyan Guo, Rui Wang, Junliang Guo, Bei Li, Kaitao Song, Xu~Tan, Guoqing Liu,
-  Jiang Bian, and Yujiu Yang.
-\newblock Connecting large language models with evolutionary algorithms yields
-  powerful prompt optimizers.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2024.
+\bibitem[Guo et~al.(2024)Guo, Wang, Guo, Li, Song, Tan, Liu, Bian, and Yang]{guo2024evoprompt}
+Qingyan Guo, Rui Wang, Junliang Guo, Bei Li, Kaitao Song, Xu~Tan, Guoqing Liu, Jiang Bian, and Yujiu Yang.
+\newblock Connecting large language models with evolutionary algorithms yields powerful prompt optimizers.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2024.
 \newblock arXiv:2309.08532.
 
-\bibitem[Hu et~al.(2024)Hu, Bieker, Li, Jiang, Keigwin, Ranganath, Keutzer, and
-  Upadhyay]{hu2024routerbench}
-Qitian~Jason Hu, Jacob Bieker, Xiuyu Li, Nan Jiang, Benjamin Keigwin, Gaurav
-  Ranganath, Kurt Keutzer, and Shriyash~Kaustubh Upadhyay.
+\bibitem[Hu et~al.(2024)Hu, Bieker, Li, Jiang, Keigwin, Ranganath, Keutzer, and Upadhyay]{hu2024routerbench}
+Qitian~Jason Hu, Jacob Bieker, Xiuyu Li, Nan Jiang, Benjamin Keigwin, Gaurav Ranganath, Kurt Keutzer, and Shriyash~Kaustubh Upadhyay.
 \newblock {RouterBench}: A benchmark for multi-{LLM} routing system.
 \newblock \emph{arXiv preprint arXiv:2403.12031}, 2024.
 
@@ -54,26 +43,20 @@ Meta~Superintelligence Labs.
 
 \bibitem[Li et~al.(2010)Li, Chu, Langford, and Schapire]{li2010contextual}
 Lihong Li, Wei Chu, John Langford, and Robert Schapire.
-\newblock A contextual-bandit approach to personalized news article
-  recommendation.
-\newblock \emph{Proceedings of the 19th International Conference on World Wide
-  Web}, 2010.
+\newblock A contextual-bandit approach to personalized news article recommendation.
+\newblock \emph{Proceedings of the 19th International Conference on World Wide Web}, 2010.
 
 \bibitem[Li(2025)]{li2025llmbandit}
 Yang Li.
-\newblock {LLM} bandit: Cost-efficient {LLM} generation via
-  preference-conditioned dynamic routing.
+\newblock {LLM} bandit: Cost-efficient {LLM} generation via preference-conditioned dynamic routing.
 \newblock \emph{arXiv preprint arXiv:2502.02743}, 2025.
 
-\bibitem[Ong et~al.(2024)Ong, Almahairi, Wu, Chiang, Wu, Gonzalez, Kadous, and
-  Stoica]{ong2024routellm}
-Isaac Ong, Amjad Almahairi, Vincent Wu, Wei-Lin Chiang, Tianhao Wu, Joseph~E.
-  Gonzalez, M.~Waleed Kadous, and Ion Stoica.
+\bibitem[Ong et~al.(2024)Ong, Almahairi, Wu, Chiang, Wu, Gonzalez, Kadous, and Stoica]{ong2024routellm}
+Isaac Ong, Amjad Almahairi, Vincent Wu, Wei-Lin Chiang, Tianhao Wu, Joseph~E. Gonzalez, M.~Waleed Kadous, and Ion Stoica.
 \newblock {RouteLLM}: Learning to route {LLMs} with preference data.
 \newblock \emph{arXiv preprint arXiv:2406.18665}, 2024.
 
-\bibitem[Salemi et~al.(2023)Salemi, Mysore, Bendersky, and
-  Zamani]{salemi2023lamp}
+\bibitem[Salemi et~al.(2023)Salemi, Mysore, Bendersky, and Zamani]{salemi2023lamp}
 Alireza Salemi, Sheshera Mysore, Michael Bendersky, and Hamed Zamani.
 \newblock {LaMP}: When large language models meet personalization.
 \newblock \emph{arXiv preprint arXiv:2304.11406}, 2023.
@@ -90,8 +73,7 @@ Hermes Team.
 
 \bibitem[Team(2025{\natexlab{c}})]{personalized_agent_pabf}
 PersonalEvo Team.
-\newblock Personalized agent bandit framework: Factorized bayesian routing for
-  agent orchestration.
+\newblock Personalized agent bandit framework: Factorized bayesian routing for agent orchestration.
 \newblock \emph{Technical Report}, 2025{\natexlab{c}}.
 
 \bibitem[Tsai \& Tran(2026)Tsai and Tran]{tsai2026neuralucb}
@@ -99,44 +81,30 @@ Yu-Chen Tsai and Cong Tran.
 \newblock Reward-based online {LLM} routing via {NeuralUCB}.
 \newblock \emph{arXiv preprint arXiv:2603.30035}, 2026.
 
-\bibitem[Westh{\"a}u{\ss}er et~al.(2025)Westh{\"a}u{\ss}er, Minker, and
-  Zepf]{westhausser2025persistent}
+\bibitem[Westh{\"a}u{\ss}er et~al.(2025)Westh{\"a}u{\ss}er, Minker, and Zepf]{westhausser2025persistent}
 Leon Westh{\"a}u{\ss}er, Wolfgang Minker, and Sebastian Zepf.
-\newblock A personalized conversational agent framework with persistent memory
-  and evolving user profiles.
+\newblock A personalized conversational agent framework with persistent memory and evolving user profiles.
 \newblock \emph{arXiv preprint arXiv:2510.07925}, 2025.
 
-\bibitem[Zhang et~al.(2026)Zhang, Zhang, Zhang, Yang, Shang, Wei, Zou, Huang,
-  Wang, Gao, Pan, Xiong, Liu, Yu, and Li]{zhang2025personaagent}
-Weizhi Zhang, Xinyang Zhang, Chenwei Zhang, Liangwei Yang, Jingbo Shang, Zhepei
-  Wei, Henry~Peng Zou, Zijie Huang, Zhengyang Wang, Yifan Gao, Xiaoman Pan,
-  Lian Xiong, Jingguo Liu, Philip~S. Yu, and Xian Li.
-\newblock {PersonaAgent}: When large language model agents meet personalization
-  at test time.
-\newblock In \emph{Annual Meeting of the Association for Computational
-  Linguistics (ACL)}, 2026.
+\bibitem[Zhang et~al.(2026)Zhang, Zhang, Zhang, Yang, Shang, Wei, Zou, Huang, Wang, Gao, Pan, Xiong, Liu, Yu, and Li]{zhang2025personaagent}
+Weizhi Zhang, Xinyang Zhang, Chenwei Zhang, Liangwei Yang, Jingbo Shang, Zhepei Wei, Henry~Peng Zou, Zijie Huang, Zhengyang Wang, Yifan Gao, Xiaoman Pan, Lian Xiong, Jingguo Liu, Philip~S. Yu, and Xian Li.
+\newblock {PersonaAgent}: When large language model agents meet personalization at test time.
+\newblock In \emph{Annual Meeting of the Association for Computational Linguistics (ACL)}, 2026.
 \newblock arXiv:2506.06254.
 
 \bibitem[Zhao et~al.(2025)Zhao, Hong, Liu, Hazarika, and Lin]{zhao2025prefeval}
 Siyan Zhao, Mingyi Hong, Yang Liu, Devamanyu Hazarika, and Kaixiang Lin.
-\newblock Do {LLMs} recognize your preferences? evaluating personalized
-  preference following in {LLMs}.
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2025.
+\newblock Do {LLMs} recognize your preferences? evaluating personalized preference following in {LLMs}.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2025.
 \newblock arXiv:2502.09597.
 
-\bibitem[Zhou et~al.(2024)Zhou, Ou, Ding, Li, Wu, Wang, Chen, Wang, Xu, Zhang,
-  Chen, and Jiang]{zhou2024symbolic}
-Wangchunshu Zhou, Yixin Ou, Shengwei Ding, Long Li, Jialong Wu, Tiannan Wang,
-  Jiamin Chen, Shuai Wang, Xiaohua Xu, Ningyu Zhang, Huajun Chen, and
-  Yuchen~Eleanor Jiang.
+\bibitem[Zhou et~al.(2024)Zhou, Ou, Ding, Li, Wu, Wang, Chen, Wang, Xu, Zhang, Chen, and Jiang]{zhou2024symbolic}
+Wangchunshu Zhou, Yixin Ou, Shengwei Ding, Long Li, Jialong Wu, Tiannan Wang, Jiamin Chen, Shuai Wang, Xiaohua Xu, Ningyu Zhang, Huajun Chen, and Yuchen~Eleanor Jiang.
 \newblock Symbolic learning enables self-evolving agents.
 \newblock \emph{arXiv preprint arXiv:2406.18532}, 2024.
 
-\bibitem[Zollo et~al.(2024)Zollo, Siah, Ye, Li, and
-  Namkoong]{zollo2024personalllm}
-Thomas~P. Zollo, Andrew Wei~Tung Siah, Naimeng Ye, Ang Li, and Hongseok
-  Namkoong.
+\bibitem[Zollo et~al.(2024)Zollo, Siah, Ye, Li, and Namkoong]{zollo2024personalllm}
+Thomas~P. Zollo, Andrew Wei~Tung Siah, Naimeng Ye, Ang Li, and Hongseok Namkoong.
 \newblock {PersonalLLM}: Tailoring {LLMs} to individual preferences.
 \newblock \emph{arXiv preprint arXiv:2409.20296}, 2024.
 
