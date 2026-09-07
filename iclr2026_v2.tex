@@ -6148,127 +6148,118 @@ This appendix block analyzes the new Hyper-Ridge router.  The reward accounting 
 
 For results combined with the four-term decomposition, draw one user \(U\)
 before routing and set \(U_s=U\) at every round. The concentration lemmas below
-also allow a predictable sequence \(U_s\). Fix one candidate in the current
-archive. The user-candidate feature at round \(s\) is
-\begin{equation}
+also allow a predictable sequence \(U_s\). For a current candidate \(a\), let
+\begin{align}
+x_s(a)
+&\,\in\,
+\mathbb R^d,
 \label{eq:hyper-feature}
-x_s(a) \in \mathbb{R}^d .
-\end{equation}
-
-The bounded mean reward for candidate \(a\) is
-\begin{equation}
+\\
+\mu(U_s,a)
+&\,=\,
+b(U_s)+x_s(a)^\top\theta_a
+\,\in\,
+[0,1],
 \label{eq:hyper-linear-model-app}
-\mu(U_s,a) = b(U_s)+x_s(a)^\top \theta_a\in[0,1],
-\end{equation}
-where the known baseline $b(U_s)$ is common to all candidates available at
-round $s$.
-
-The observed reward on a selected candidate is
-\begin{equation}
+\\
+r_s
+&\,=\,
+b(U_s)+x_s(a_s)^\top\theta_{a_s}+\xi_s,
 \label{eq:hyper-reward}
-r_s = b(U_s)+x_s(a_s)^\top \theta_{a_s} + \xi_s .
-\end{equation}
-
-The centered response used by Hyper-Ridge is
-\begin{equation}
+\\
+y_s
+&\,=\,
+r_s-b(U_s)
+\,=\,
+x_s(a_s)^\top\theta_{a_s}+\xi_s.
 \label{eq:hyper-centered-reward}
-y_s=r_s-b(U_s)=x_s(a_s)^\top\theta_{a_s}+\xi_s.
-\end{equation}
-
-The new modeling assumption is that candidate parameters share a hyper-covariance:
-\begin{equation}
+\end{align}
+The known baseline \(b(U_s)\) is common to all available candidates.
+Candidate parameters share the positive-definite hyper-covariance
+\begin{align}
+\theta_a
+&\,\sim\,
+(0,\Omega),
 \label{eq:hyper-random-effects}
-\theta_a \sim (0,\Omega).
-\end{equation}
-
-Here the notation means
-\begin{equation}
+\\
+\mathbb E[\theta_a]
+&\,=\,
+0,
 \label{eq:hyper-random-effects-mean}
-\mathbb{E}[\theta_a] = 0,
-\end{equation}
-and
-\begin{equation}
+\\
+\operatorname{Cov}(\theta_a)
+&\,=\,
+\Omega,
 \label{eq:hyper-random-effects-cov}
-\operatorname{Cov}(\theta_a)=\Omega .
-\end{equation}
-
-The covariance is required to be positive definite:
-\begin{equation}
+\\
+\Omega
+&\,\succ\,
+0.
 \label{eq:hyper-omega-pd}
-\Omega \succ 0 .
-\end{equation}
+\end{align}
 
-For candidate \(a\), the pre-\(t\) selected-round index set is
-\begin{equation}
+For candidate \(a\), collect its pre-\(t\) observations as
+\begin{align}
+\mathcal T_{a,t}
+&\,=\,
+\{s<t:a_s=a\},
 \label{eq:hyper-index-set}
-\mathcal{T}_{a,t}=\{\,s<t:\ a_s=a\,\}.
-\end{equation}
-
-The candidate-specific design matrix stacks the selected features:
-\begin{equation}
-\label{eq:hyper-design-app}
-X_{a,t}=
+\\
+X_{a,t}
+&\,=\,
 \begin{bmatrix}
 x_s(a)^\top
-\end{bmatrix}_{s\in\mathcal{T}_{a,t}} .
-\end{equation}
-
-The corresponding centered response vector is
-\begin{equation}
-\label{eq:hyper-response}
-y_{a,t}=
+\end{bmatrix}_{s\in\mathcal T_{a,t}},
+\label{eq:hyper-design-app}
+\\
+y_{a,t}
+&\,=\,
 \begin{bmatrix}
 y_s
-\end{bmatrix}_{s\in\mathcal{T}_{a,t}} .
-\end{equation}
-
-The hyper-covariance estimate available before round \(t\) is
-\begin{equation}
+\end{bmatrix}_{s\in\mathcal T_{a,t}},
+\label{eq:hyper-response}
+\\
+\widehat\Omega_t
+&\,\succ\,
+0.
 \label{eq:hyper-omega-hat}
-\widehat{\Omega}_t \succ 0 .
-\end{equation}
+\end{align}
+The last line is the hyper-covariance estimate available before round \(t\).
 
-The generalized-ridge estimator used by Hyper-Ridge PersonalEvo is
-\begin{equation}
-\label{eq:hyper-estimator-argmin}
+Hyper-Ridge estimates each candidate by
+\begin{align}
 \widehat{\theta}_{a,t}
-=
+&\,=\,
 \operatorname*{arg\,min}_{\theta\in\mathbb{R}^d}
 \left\{
 \|y_{a,t}-X_{a,t}\theta\|_2^2
 +
 \lambda\,\theta^\top\widehat{\Omega}_t^{-1}\theta
-\right\}.
-\end{equation}
-
-Equivalently,
-\begin{equation}
-\label{eq:hyper-estimator-closed}
+\right\},
+\label{eq:hyper-estimator-argmin}
+\\
 \widehat{\theta}_{a,t}
-=
+&\,=\,
 \left(
 X_{a,t}^\top X_{a,t}
 +
 \lambda \widehat{\Omega}_t^{-1}
 \right)^{-1}
-X_{a,t}^\top y_{a,t}.
-\end{equation}
-
-The generalized design matrix is
-\begin{equation}
-\label{eq:hyper-vhat}
+X_{a,t}^\top y_{a,t},
+\label{eq:hyper-estimator-closed}
+\\
 V_{a,t}^{\mathrm{hyper}}
-=
+&\,=\,
 X_{a,t}^\top X_{a,t}
 +
 \lambda\widehat{\Omega}_t^{-1}.
-\end{equation}
+\label{eq:hyper-vhat}
+\end{align}
 
-The Hyper-Ridge UCB score is
-\begin{equation}
-\label{eq:hyper-ucb-app}
+The Hyper-Ridge score and selected candidate are
+\begin{align}
 \mathrm{UCB}_{t}^{\mathrm{hyper}}(U_t,a)
-=
+&\,=\,
 b(U_t)+x_t(a)^\top \widehat{\theta}_{a,t}
 +
 \alpha_t
@@ -6276,17 +6267,15 @@ b(U_t)+x_t(a)^\top \widehat{\theta}_{a,t}
 x_t(a)^\top
 \left(V_{a,t}^{\mathrm{hyper}}\right)^{-1}
 x_t(a)
-}.
-\end{equation}
-
-The selected candidate is
-\begin{equation}
-\label{eq:hyper-action}
+},
+\label{eq:hyper-ucb-app}
+\\
 a_t(U_t)
-\in
+&\,\in\,
 \operatorname*{arg\,max}_{a\in A_t(U_t)}
 \mathrm{UCB}_{t}^{\mathrm{hyper}}(U_t,a).
-\end{equation}
+\label{eq:hyper-action}
+\end{align}
 
 For a generic design matrix \(X\), the effective dimension induced by \(\Omega\) is
 \begin{equation}
@@ -6302,25 +6291,25 @@ X^\top X+\lambda\Omega^{-1}
 \right].
 \end{equation}
 
-A small calculation illustrates why \(\Omega\) can reduce the statistical dimension.  Take
-\begin{equation}
-\label{eq:hyper-example-omega}
-\Omega=
+A small calculation illustrates why \(\Omega\) can reduce the statistical
+dimension. Take
+\begin{align}
+\Omega
+&\,=\,
 \begin{bmatrix}
 1&0\\
 0&0.01
-\end{bmatrix}.
-\end{equation}
-
-Let
-\begin{equation}
-\label{eq:hyper-example-xtx}
-X^\top X=
+\end{bmatrix},
+\label{eq:hyper-example-omega}
+\\
+X^\top X
+&\,=\,
 \begin{bmatrix}
 9&0\\
 0&1
 \end{bmatrix}.
-\end{equation}
+\label{eq:hyper-example-xtx}
+\end{align}
 
 With \(\lambda=1\), the effective dimension is
 \begin{align}
@@ -6366,34 +6355,32 @@ d_{\mathrm{eff}}(I;X)
 
 Thus the same data matrix has smaller exploration geometry when the archive covariance says the second coordinate is unlikely to matter.
 
-For the estimator itself, consider
-\begin{equation}
-\label{eq:hyper-example-X}
-X=
+For the estimator itself, take
+\begin{align}
+X
+&\,=\,
 \begin{bmatrix}
 1&0\\
 2&0
-\end{bmatrix}.
-\end{equation}
-
-Let the observed rewards be
-\begin{equation}
-\label{eq:hyper-example-y}
-y=
+\end{bmatrix},
+\label{eq:hyper-example-X}
+\\
+y
+&\,=\,
 \begin{bmatrix}
 1\\
 2
 \end{bmatrix}.
-\end{equation}
+\label{eq:hyper-example-y}
+\end{align}
 
 Using the same \(\Omega\) and \(\lambda=1\), the generalized design is
 \begin{align}
-\label{eq:hyper-example-V}
 V^{\mathrm{hyper}}
-&=
+&\,=\,
 X^\top X+\Omega^{-1}
 \\
-&=
+&\,=\,
 \begin{bmatrix}
 5&0\\
 0&0
@@ -6404,27 +6391,23 @@ X^\top X+\Omega^{-1}
 0&100
 \end{bmatrix}
 \\
-&=
+&\,=\,
 \begin{bmatrix}
 6&0\\
 0&100
-\end{bmatrix}.
-\end{align}
-
-Since
-\begin{equation}
-\label{eq:hyper-example-Xty}
-X^\top y=
+\end{bmatrix},
+\label{eq:hyper-example-V}
+\\
+X^\top y
+&\,=\,
 \begin{bmatrix}
 5\\
 0
 \end{bmatrix},
-\end{equation}
-the estimate is
-\begin{align}
-\label{eq:hyper-example-theta}
+\label{eq:hyper-example-Xty}
+\\
 \widehat{\theta}
-&=
+&\,=\,
 \begin{bmatrix}
 6&0\\
 0&100
@@ -6434,19 +6417,17 @@ the estimate is
 0
 \end{bmatrix}
 \\
-&=
+&\,=\,
 \begin{bmatrix}
 5/6\\
 0
-\end{bmatrix}.
-\end{align}
-
-The confidence width for \(x=(1,0)^\top\) is
-\begin{align}
-\label{eq:hyper-example-width}
+\end{bmatrix},
+\label{eq:hyper-example-theta}
+\\
 \sqrt{x^\top (V^{\mathrm{hyper}})^{-1}x}
-&=
+&\,=\,
 \sqrt{1/6}.
+\label{eq:hyper-example-width}
 \end{align}
 
 \subsection{Shared-structure assumption}
@@ -6455,88 +6436,90 @@ We now restate the shared-structure condition used by the Hyper-Ridge analysis. 
 
 \begin{assumption}[Shared archive geometry]
 \label{assump:shared-structure-app}
-There is a positive definite hyper-covariance matrix
-\begin{equation}
+There is a positive-definite hyper-covariance matrix such that
+\begin{align}
+\Omega
+&\,\in\,
+\mathbb R^{d\times d},
+\qquad
+\Omega\succ0,
 \label{eq:hyper-assump-omega}
-\Omega\in\mathbb{R}^{d\times d}.
-\end{equation}
-Each candidate parameter follows the random-effects model
-\begin{equation}
+\\
+\theta_a
+&\,\sim\,
+(0,\Omega).
 \label{eq:hyper-assump-random}
-\theta_a\sim(0,\Omega).
-\end{equation}
+\end{align}
 Here this notation means $\mathbb E[\theta_a]=0$ and
 $\mathbb E[\theta_a\theta_a^\top]=\Omega$. The raw mean reward includes a
-known candidate-independent baseline:
-\begin{equation}
-\label{eq:hyper-assump-bounded-mean}
+known candidate-independent baseline, and realized parameters satisfy
+\begin{align}
 \mu(U_t,a)
-=
+&\,=\,
 b(U_t)+x_t(a)^\top\theta_a
-\in[0,1].
-\end{equation}
-For the high-probability regret analysis, the realized candidate parameters obey the ellipsoid bound
-\begin{equation}
-\label{eq:hyper-assump-ellipsoid}
+\,\in\,
+[0,1],
+\label{eq:hyper-assump-bounded-mean}
+\\
 \|\theta_a\|_{\Omega^{-1}}
-\le
+&\,\leq\,
 S_{\Omega}
 \qquad
-\text{for every } a\in A_t(U_t)\text{ and }t\le T .
-\end{equation}
+\text{for every \(a\in A_t(U_t)\) and \(t\leq T\)}.
+\label{eq:hyper-assump-ellipsoid}
+\end{align}
 The archive is indexed by predictable birth-order slots as in
 Lemma~\ref{lem:predictable}. In particular, each candidate identity and feature
 rule is observable at birth, its latent parameter is fixed at birth in the
-analysis filtration, and the features are observable and predictable:
-\begin{equation}
-\label{eq:hyper-assump-predictable}
-\sigma(x_t(a))\subseteq\mathcal{O}_{t-1}
+analysis filtration, and the features are observable and predictable. For a
+predictable user stream,
+\begin{align}
+\sigma(x_t(a))
+&\,\subseteq\,
+\mathcal O_{t-1}
 \qquad
-\text{for every }a\in A_t(U_t).
-\end{equation}
-For a predictable user stream, define the realized routing-candidate union by
-\begin{equation}
-\label{eq:hyper-route-union}
+\text{for every \(a\in A_t(U_t)\)},
+\label{eq:hyper-assump-predictable}
+\\
 \mathcal A_T^{\mathrm{route}}
-=
+&\,=\,
 \bigcup_{t=1}^{T}A_t(U_t).
-\end{equation}
-The centered rewards satisfy the linear model
-\begin{equation}
+\label{eq:hyper-route-union}
+\\
+y_t
+&\,\coloneqq\,
+r_t-b(U_t)
+\,=\,
+x_t(a_t)^\top\theta_{a_t}+\xi_t.
 \label{eq:hyper-assump-linear}
-y_t:=r_t-b(U_t)=x_t(a_t)^\top\theta_{a_t}+\xi_t .
-\end{equation}
-The noise is conditionally \(\sigma\)-sub-Gaussian:
-\begin{equation}
-\label{eq:hyper-assump-subg}
+\end{align}
+The noise, feature radius, and effective dimension satisfy
+\begin{align}
 \mathbb{E}
 \!\left[
 \exp(\eta\xi_t)\mid\mathcal{F}_{t-1}
 \right]
-\le
+&\,\leq\,
 \exp\!\left(\frac{\eta^2\sigma^2}{2}\right)
 \qquad
-\text{for every }\eta\in\mathbb{R}.
-\end{equation}
-The archive covariance gives a bounded feature radius:
-\begin{equation}
-\label{eq:hyper-assump-radius}
+\text{for every \(\eta\in\mathbb R\)},
+\label{eq:hyper-assump-subg}
+\\
 x_t(a)^\top\Omega x_t(a)
-\le
+&\,\leq\,
 L_{\Omega}^2
 \qquad
-\text{for every }a\in A_t(U_t).
-\end{equation}
-There is a deterministic effective-dimension cap:
-\begin{equation}
-\label{eq:hyper-assump-small-deff}
+\text{for every \(a\in A_t(U_t)\)},
+\label{eq:hyper-assump-radius}
+\\
 \max_{1\le s\le T+1}\max_{a\in\mathcal A_T^{\mathrm{route}}}
 d_{\mathrm{eff}}(\Omega;X_{a,s})
-\le
+&\,\leq\,
 \bar d_{\mathrm{eff},T}(\Omega)
 <\infty
-\quad\text{almost surely}.
-\end{equation}
+\qquad\text{almost surely}.
+\label{eq:hyper-assump-small-deff}
+\end{align}
 \end{assumption}
 
 The concentration argument uses the realized ellipsoid bound, predictable
@@ -6563,26 +6546,23 @@ y_s=x_s(a)^\top\theta_a+\xi_s,
 \le \exp(\eta^2\sigma^2/2)
 \quad\text{for every }\eta\in\mathbb R.
 \end{equation}
-Let the router use the true covariance, \(\widehat\Omega_t=\Omega\). Define the
-known-covariance design matrix by
-\begin{equation}
-\label{eq:hyper-known-V}
+Let the router use the true covariance, \(\widehat\Omega_t=\Omega\), and define
+\begin{align}
 V_{a,t}^{\Omega}
-=
+&\,=\,
 \lambda\Omega^{-1}
 +
 \sum_{s\in\mathcal{T}_{a,t}}
-x_s(a)x_s(a)^\top .
-\end{equation}
-Define the known-covariance estimator by
-\begin{equation}
-\label{eq:hyper-known-est}
+x_s(a)x_s(a)^\top,
+\label{eq:hyper-known-V}
+\\
 \widehat{\theta}_{a,t}^{\Omega}
-=
+&\,=\,
 \left(V_{a,t}^{\Omega}\right)^{-1}
 \sum_{s\in\mathcal{T}_{a,t}}
-x_s(a)y_s .
-\end{equation}
+x_s(a)y_s.
+\label{eq:hyper-known-est}
+\end{align}
 Define the confidence radius
 \begin{equation}
 \label{eq:hyper-beta}
@@ -6603,44 +6583,43 @@ Define the confidence radius
 \sqrt{\lambda}\,S_{\Omega}.
 \end{equation}
 Then, with probability at least \(1-\delta\), uniformly over \(t\),
-\begin{equation}
-\label{eq:hyper-sn-param}
+\begin{align}
 \left\|
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right\|_{V_{a,t}^{\Omega}}
-\le
-\beta_{a,t}^{\Omega}(\delta).
-\end{equation}
-Consequently, for every predictable test feature \(x\in\mathbb{R}^d\),
-\begin{equation}
-\label{eq:hyper-sn-prediction}
+&\,\leq\,
+\beta_{a,t}^{\Omega}(\delta),
+\label{eq:hyper-sn-param}
+\\
 \left|
 x^\top
 \left(
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right)
 \right|
-\le
+&\,\leq\,
 \beta_{a,t}^{\Omega}(\delta)
 \sqrt{x^\top\left(V_{a,t}^{\Omega}\right)^{-1}x}.
-\end{equation}
+\label{eq:hyper-sn-prediction}
+\end{align}
+The second row holds for every predictable test feature \(x\in\mathbb R^d\).
 \end{lemma}
 
 \begin{proof}
-For this fixed candidate, define the regularizer
-\begin{equation}
+For this fixed candidate, define the regularizer and noise-weighted feature
+martingale by
+\begin{align}
+A
+&\,=\,
+\lambda\Omega^{-1},
 \label{eq:hyper-sn-proof-A}
-A=\lambda\Omega^{-1}.
-\end{equation}
-
-Define the noise-weighted feature martingale
-\begin{equation}
-\label{eq:hyper-sn-proof-S}
+\\
 S_{a,t}
-=
+&\,=\,
 \sum_{s\in\mathcal{T}_{a,t}}
-x_s(a)\xi_s .
-\end{equation}
+x_s(a)\xi_s.
+\label{eq:hyper-sn-proof-S}
+\end{align}
 
 Using the reward model, the estimator error satisfies
 \begin{align}
@@ -6680,13 +6659,13 @@ S_{a,t}
 A\theta_a .
 \end{align}
 
-Taking the \(V_{a,t}^{\Omega}\)-norm and applying the triangle inequality gives
+Taking the \(V_{a,t}^{\Omega}\)-norm, applying the triangle inequality, and
+using \(V_{a,t}^{\Omega}\succeq A\) give
 \begin{align}
-\label{eq:hyper-sn-proof-triangle}
 \left\|
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right\|_{V_{a,t}^{\Omega}}
-&\le
+&\,\leq\,
 \left\|
 S_{a,t}
 \right\|_{\left(V_{a,t}^{\Omega}\right)^{-1}}
@@ -6694,37 +6673,32 @@ S_{a,t}
 \left\|
 A\theta_a
 \right\|_{\left(V_{a,t}^{\Omega}\right)^{-1}} .
-\end{align}
-
-Since \(V_{a,t}^{\Omega}\succeq A\), we have
-\begin{align}
-\label{eq:hyper-sn-proof-bias}
+\label{eq:hyper-sn-proof-triangle}
+\\
 \left\|
 A\theta_a
 \right\|_{\left(V_{a,t}^{\Omega}\right)^{-1}}^2
-&=
+&\,=\,
 \theta_a^\top A
 \left(V_{a,t}^{\Omega}\right)^{-1}
 A\theta_a
 \\
-&\le
+&\,\leq\,
 \theta_a^\top A\theta_a
-\\
-&=
+\,=\,
 \lambda\theta_a^\top\Omega^{-1}\theta_a
-\\
-&\le
-\lambda S_{\Omega}^2 .
+\,\leq\,
+\lambda S_{\Omega}^2.
+\label{eq:hyper-sn-proof-bias}
 \end{align}
 
 It remains to control the martingale term. If \(\sigma=0\), the conditional
 moment-generating-function assumption implies \(\xi_s=0\) almost surely, so
 the claim is immediate. Suppose \(\sigma>0\). For fixed
 \(z\in\mathbb{R}^d\), define
-\begin{equation}
-\label{eq:hyper-sn-proof-mgf}
+\begin{align}
 M_{a,t}(z)
-=
+&\,=\,
 \exp\!\left(
 \frac{z^\top S_{a,t}}{\sigma}
 -
@@ -6732,10 +6706,9 @@ M_{a,t}(z)
 z^\top
 \left(V_{a,t}^{\Omega}-A\right)
 z
-\right).
-\end{equation}
-At a selected round \(s\), conditional sub-Gaussianity gives
-\begin{equation}
+\right),
+\label{eq:hyper-sn-proof-mgf}
+\\
 \mathbb E\!\left[
 \exp\!\left(
 \frac{z^\top x_s(a)\xi_s}{\sigma}
@@ -6743,46 +6716,48 @@ At a selected round \(s\), conditional sub-Gaussianity gives
 \right)
 \middle|\mathcal F_{s-1}
 \right]
-\le1.
-\end{equation}
+&\,\leq\,
+1
+\quad\text{at every selected round \(s\)}.
+\end{align}
 At an unselected round the process does not change. Hence
 \((M_{a,t}(z))_{t\le T}\) is a nonnegative supermartingale with initial value
 one.
 
 Let
-\begin{equation}
+\begin{align}
 \varphi_A(z)
-=
+&\,=\,
 \frac{\det(A)^{1/2}}{(2\pi)^{d/2}}
-\exp\!\left(-\frac{z^\top A z}{2}\right)
-\end{equation}
-be the Gaussian density with precision \(A\), and define
-\(\mathcal M_{a,t}=\int M_{a,t}(z)\varphi_A(z)\,dz\).
+\exp\!\left(-\frac{z^\top A z}{2}\right),
+&
+\mathcal M_{a,t}
+&\,=\,
+\int_{\mathbb R^d}M_{a,t}(z)\varphi_A(z)\,dz.
+\end{align}
+The first expression is the Gaussian density with precision \(A\).
 Tonelli's theorem shows that \((\mathcal M_{a,t})_{t\le T}\) is also a
 nonnegative supermartingale with initial value one. Completing the square gives
-\begin{equation}
-\label{eq:hyper-sn-proof-mixture}
+\begin{align}
 \mathcal M_{a,t}
-=
+&\,=\,
 \frac{\det(A)^{1/2}}{\det(V_{a,t}^{\Omega})^{1/2}}
 \exp\!\left(
 \frac{
 \|S_{a,t}\|_{\left(V_{a,t}^{\Omega}\right)^{-1}}^2
 }{2\sigma^2}
-\right).
-\end{equation}
-
-Ville's inequality now gives
-\begin{equation}
-\label{eq:hyper-sn-proof-ville}
+\right),
+\label{eq:hyper-sn-proof-mixture}
+\\
 \Pr\!\left(
 \sup_{t\le T}\mathcal M_{a,t}
 \ge
 \frac{1}{\delta}
 \right)
-\le
-\delta .
-\end{equation}
+&\,\leq\,
+\delta.
+\label{eq:hyper-sn-proof-ville}
+\end{align}
 
 Consequently, with probability at least \(1-\delta\), simultaneously for every
 \(t\le T\), substituting \(A=\lambda\Omega^{-1}\) gives
@@ -6804,78 +6779,61 @@ Consequently, with probability at least \(1-\delta\), simultaneously for every
 \end{equation}
 
 Combining \eqref{eq:hyper-sn-proof-triangle}, \eqref{eq:hyper-sn-proof-bias}, and \eqref{eq:hyper-sn-proof-event} proves
-\begin{equation}
-\label{eq:hyper-sn-proof-param}
+\begin{align}
 \left\|
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right\|_{V_{a,t}^{\Omega}}
-\le
-\beta_{a,t}^{\Omega}(\delta).
-\end{equation}
-
-Finally, Cauchy--Schwarz in the \(V_{a,t}^{\Omega}\) inner product gives
-\begin{align}
-\label{eq:hyper-sn-proof-pred}
+&\,\leq\,
+\beta_{a,t}^{\Omega}(\delta),
+\label{eq:hyper-sn-proof-param}
+\\
 \left|
 x^\top
 \left(
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right)
 \right|
-&=
-\left|
-\left[
-\left(V_{a,t}^{\Omega}\right)^{-1/2}x
-\right]^\top
-\left[
-\left(V_{a,t}^{\Omega}\right)^{1/2}
-\left(
-\widehat{\theta}_{a,t}^{\Omega}-\theta_a
-\right)
-\right]
-\right|
-\\
-&\le
+&\,\leq\,
 \sqrt{x^\top\left(V_{a,t}^{\Omega}\right)^{-1}x}
 \left\|
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right\|_{V_{a,t}^{\Omega}}
 \\
-&\le
+&\,\leq\,
 \beta_{a,t}^{\Omega}(\delta)
 \sqrt{x^\top\left(V_{a,t}^{\Omega}\right)^{-1}x}.
+\label{eq:hyper-sn-proof-pred}
 \end{align}
+The last two rows apply Cauchy--Schwarz in the
+\(V_{a,t}^{\Omega}\)-inner product.
 \end{proof}
 
-A concrete confidence-bound computation is useful.  Suppose
-\begin{equation}
-\label{eq:hyper-bound-example-det-ratio}
+A concrete confidence-bound computation is useful. Suppose
+\begin{align}
 \frac{
 \det(V_{a,t}^{\Omega})^{1/2}
 }{
 \det(\lambda\Omega^{-1})^{1/2}
 }
-=
-10 .
-\end{equation}
-
-Let
-\begin{equation}
+&\,=\,
+10,
+\label{eq:hyper-bound-example-det-ratio}
+\\
+\sigma
+&\,=\,
+0.05,
 \label{eq:hyper-bound-example-sigma}
-\sigma=0.05 .
-\end{equation}
-
-Let
-\begin{equation}
+\\
+\delta
+&\,=\,
+0.05,
 \label{eq:hyper-bound-example-delta}
-\delta=0.05 .
-\end{equation}
-
-Let the regularization bias term be
-\begin{equation}
+\\
+\sqrt{\lambda}S_{\Omega}
+&\,=\,
+0.20.
 \label{eq:hyper-bound-example-bias}
-\sqrt{\lambda}S_{\Omega}=0.20 .
-\end{equation}
+\end{align}
 
 Then the confidence radius is
 \begin{align}
@@ -6896,25 +6854,24 @@ Then the confidence radius is
 0.363 .
 \end{align}
 
-If the uncertainty width at a candidate is
-\begin{equation}
-\label{eq:hyper-bound-example-width}
-\sqrt{x^\top(V_{a,t}^{\Omega})^{-1}x}=0.10,
-\end{equation}
-then Lemma~\ref{lem:hyper-sn} gives the prediction error bound
+If a candidate has width \(0.10\), Lemma~\ref{lem:hyper-sn} gives
 \begin{align}
-\label{eq:hyper-bound-example-pred}
+\sqrt{x^\top(V_{a,t}^{\Omega})^{-1}x}
+&\,=\,
+0.10,
+\label{eq:hyper-bound-example-width}
+\\
 \left|
 x^\top
 \left(
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right)
 \right|
-&\le
+&\,\leq\,
 0.363\cdot 0.10
-\\
-&=
-0.0363 .
+\,=\,
+0.0363.
+\label{eq:hyper-bound-example-pred}
 \end{align}
 
 \subsection{Elliptical potential in the \(\Omega\) geometry}
@@ -6923,125 +6880,117 @@ The next lemma is the step that converts per-round confidence widths into a dime
 
 \begin{lemma}[\(\Omega\)-elliptical potential and effective dimension]
 \label{lem:hyper-elliptical}
-Fix one candidate \(a\), and write its selected features in chronological order as
-\begin{equation}
+Fix one candidate \(a\). Write its selected features in chronological order
+and define
+\begin{align}
+&x_1,\ldots,x_n,
 \label{eq:hyper-elliptical-features}
-x_1,\ldots,x_n .
-\end{equation}
-Define the recursive generalized-ridge matrices by
-\begin{equation}
+\\
+V_0
+&\,=\,
+\lambda\Omega^{-1},
 \label{eq:hyper-elliptical-V0}
-V_0=\lambda\Omega^{-1},
-\end{equation}
-and
-\begin{equation}
+\\
+V_s
+&\,=\,
+V_{s-1}+x_sx_s^\top,
 \label{eq:hyper-elliptical-Vs}
-V_s=V_{s-1}+x_sx_s^\top .
-\end{equation}
-Define the uncertainty increment by
-\begin{equation}
+\\
+q_s
+&\,=\,
+x_s^\top V_{s-1}^{-1}x_s,
 \label{eq:hyper-elliptical-qs}
-q_s=x_s^\top V_{s-1}^{-1}x_s .
-\end{equation}
-Let the full design be
-\begin{equation}
-\label{eq:hyper-elliptical-X}
-X=
+\\
+X
+&\,=\,
 \begin{bmatrix}
 x_1^\top\\
 \vdots\\
 x_n^\top
 \end{bmatrix}.
-\end{equation}
-Define the covariance-scaled Gram matrix by
-\begin{equation}
-\label{eq:hyper-elliptical-M}
-M=
+\label{eq:hyper-elliptical-X}
+\end{align}
+For the covariance-scaled Gram matrix, let
+\begin{align}
+M
+&\,=\,
 \lambda^{-1}\Omega^{1/2}X^\top X\Omega^{1/2}.
-\end{equation}
-Let its largest eigenvalue be
-\begin{equation}
+\label{eq:hyper-elliptical-M}
+\\
+R
+&\,=\,
+\lambda_{\max}(M),
 \label{eq:hyper-elliptical-R}
-R=\lambda_{\max}(M).
-\end{equation}
-Define
-\begin{equation}
-\label{eq:hyper-elliptical-cR}
+\\
 c(R)=
 \begin{cases}
 1, & R=0,\\[2mm]
 \dfrac{1+R}{R}\log(1+R), & R>0 .
 \end{cases}
-\end{equation}
+\label{eq:hyper-elliptical-cR}
+\end{align}
 Then
-\begin{equation}
-\label{eq:hyper-elliptical-main}
+\begin{align}
 \sum_{s=1}^n \min\{1,q_s\}
-\le
+&\,\leq\,
 2\,c(R)\,d_{\mathrm{eff}}(\Omega;X).
-\end{equation}
+\label{eq:hyper-elliptical-main}
+\end{align}
 If additionally \(x_s^\top\Omega x_s\le L_{\Omega}^2\), then
-\begin{equation}
+\begin{align}
+R
+&\,\leq\,
+\frac{nL_{\Omega}^2}{\lambda},
 \label{eq:hyper-elliptical-radius}
-R\le \frac{nL_{\Omega}^2}{\lambda},
-\end{equation}
-and hence
-\begin{equation}
-\label{eq:hyper-elliptical-logT}
+\\
 \sum_{s=1}^n \min\{1,q_s\}
-\le
+&\,\leq\,
 2
 \left[
 1+
 \log\!\left(1+\frac{nL_{\Omega}^2}{\lambda}\right)
 \right]
 d_{\mathrm{eff}}(\Omega;X).
-\end{equation}
+\label{eq:hyper-elliptical-logT}
+\end{align}
 \end{lemma}
 
 \begin{proof}
-The matrix determinant lemma gives
+The matrix determinant lemma, its product over \(s\), and the logarithm of that
+product give
 \begin{align}
-\label{eq:hyper-elliptical-proof-det-update}
 \det(V_s)
-&=
+&\,=\,
 \det(V_{s-1})
 \left(1+x_s^\top V_{s-1}^{-1}x_s\right)
+\,=\,
+\det(V_{s-1})(1+q_s),
+\label{eq:hyper-elliptical-proof-det-update}
 \\
-&=
-\det(V_{s-1})(1+q_s).
-\end{align}
-
-Multiplying over \(s=1,\ldots,n\) gives
-\begin{align}
-\label{eq:hyper-elliptical-proof-product}
 \frac{\det(V_n)}{\det(V_0)}
-&=
-\prod_{s=1}^{n}(1+q_s).
-\end{align}
-
-Taking logarithms yields
-\begin{align}
-\label{eq:hyper-elliptical-proof-logprod}
-\log\frac{\det(V_n)}{\det(V_0)}
-&=
-\sum_{s=1}^{n}\log(1+q_s).
-\end{align}
-
-For every \(q\ge 0\), the scalar inequality
-\begin{equation}
-\label{eq:hyper-elliptical-proof-scalar-min}
-\min\{1,q\}\le 2\log(1+q)
-\end{equation}
-holds.  Therefore
-\begin{align}
-\label{eq:hyper-elliptical-proof-first}
-\sum_{s=1}^{n}\min\{1,q_s\}
-&\le
-2\sum_{s=1}^{n}\log(1+q_s)
+&\,=\,
+\prod_{s=1}^{n}(1+q_s),
+\label{eq:hyper-elliptical-proof-product}
 \\
-&=
+\log\frac{\det(V_n)}{\det(V_0)}
+&\,=\,
+\sum_{s=1}^{n}\log(1+q_s).
+\label{eq:hyper-elliptical-proof-logprod}
+\end{align}
+
+For every \(q\geq0\), \(\min\{1,q\}\leq2\log(1+q)\). Hence
+\begin{align}
+\min\{1,q\}
+&\,\leq\,
+2\log(1+q),
+\label{eq:hyper-elliptical-proof-scalar-min}
+\\
+\sum_{s=1}^{n}\min\{1,q_s\}
+&\,\leq\,
+2\sum_{s=1}^{n}\log(1+q_s)
+\,=\,
 2\log\frac{\det(V_n)}{\det(V_0)}.
+\label{eq:hyper-elliptical-proof-first}
 \end{align}
 
 The determinant ratio can be rewritten in the covariance-scaled coordinates:
@@ -7060,25 +7009,23 @@ I+
 \log\det(I+M).
 \end{align}
 
-Let the eigenvalues of \(M\) be
-\begin{equation}
+Let \(\nu_1,\ldots,\nu_d\) be the eigenvalues of \(M\). Then
+\begin{align}
+&\nu_1,\ldots,\nu_d,
 \label{eq:hyper-elliptical-proof-eigs}
-\nu_1,\ldots,\nu_d .
-\end{equation}
-
-Then
-\begin{equation}
+\\
+0
+&\,\leq\,
+\nu_i
+\,\leq\,
+R,
 \label{eq:hyper-elliptical-proof-eigs-range}
-0\le \nu_i\le R .
-\end{equation}
-
-The log-determinant is
-\begin{equation}
-\label{eq:hyper-elliptical-proof-logdet-eig}
+\\
 \log\det(I+M)
-=
+&\,=\,
 \sum_{i=1}^{d}\log(1+\nu_i).
-\end{equation}
+\label{eq:hyper-elliptical-proof-logdet-eig}
+\end{align}
 
 The effective dimension is
 \begin{align}
@@ -7110,35 +7057,28 @@ X^\top X+\lambda\Omega^{-1}
 \end{align}
 
 For \(z>0\), define
-\begin{equation}
-\label{eq:hyper-elliptical-proof-g}
+\begin{align}
 g(z)=
 \frac{1+z}{z}\log(1+z).
-\end{equation}
-
-Its derivative is
-\begin{align}
-\label{eq:hyper-elliptical-proof-gprime}
+\label{eq:hyper-elliptical-proof-g}
+\\
 g'(z)
-&=
+&\,=\,
 -\frac{\log(1+z)}{z^2}+\frac{1+1/z}{1+z}
-\\
-&=
+\,=\,
 \frac{z-\log(1+z)}{z^2}
+\,\geq\,
+0,
+\label{eq:hyper-elliptical-proof-gprime}
 \\
-&\ge
-0 .
-\end{align}
-
-Thus \(g(z)\le g(R)\) for \(0<z\le R\).  Equivalently,
-\begin{equation}
-\label{eq:hyper-elliptical-proof-scalar}
 \log(1+z)
-\le
+&\,\leq\,
 c(R)\frac{z}{1+z}
 \qquad
-\text{for }0\le z\le R .
-\end{equation}
+\text{for \(0\leq z\leq R\)}.
+\label{eq:hyper-elliptical-proof-scalar}
+\end{align}
+The last row is equivalent to \(g(z)\leq g(R)\).
 
 Applying this scalar bound eigenvalue by eigenvalue gives
 \begin{align}
@@ -7164,39 +7104,31 @@ Combining \eqref{eq:hyper-elliptical-proof-first} and \eqref{eq:hyper-elliptical
 
 It remains to bound \(R\).  Since \(M\succeq 0\),
 \begin{align}
-\label{eq:hyper-elliptical-proof-R}
 R
-&\le
+&\,\leq\,
 \operatorname{tr}(M)
-\\
-&=
+\,=\,
 \lambda^{-1}
 \operatorname{tr}\!\left(\Omega^{1/2}X^\top X\Omega^{1/2}\right)
 \\
-&=
+&\,=\,
 \lambda^{-1}
 \sum_{s=1}^{n}
 x_s^\top\Omega x_s
+\,\leq\,
+\frac{nL_{\Omega}^2}{\lambda},
+\label{eq:hyper-elliptical-proof-R}
 \\
-&\le
-\frac{nL_{\Omega}^2}{\lambda}.
-\end{align}
-
-Finally, for \(R\ge0\),
-\begin{equation}
+c(R)
+&\,\leq\,
+1+\log(1+R),
 \label{eq:hyper-elliptical-proof-cR-bound}
+\\
 c(R)
-\le
-1+\log(1+R).
-\end{equation}
-
-Substituting \eqref{eq:hyper-elliptical-proof-R} into \eqref{eq:hyper-elliptical-proof-cR-bound} yields
-\begin{equation}
-\label{eq:hyper-elliptical-proof-logT}
-c(R)
-\le
+&\,\leq\,
 1+\log\!\left(1+\frac{nL_{\Omega}^2}{\lambda}\right).
-\end{equation}
+\label{eq:hyper-elliptical-proof-logT}
+\end{align}
 
 The claimed logarithmic bound follows.
 \end{proof}
@@ -7208,56 +7140,54 @@ We now combine Lemma~\ref{lem:hyper-sn} and Lemma~\ref{lem:hyper-elliptical}.  T
 
 \begin{assumption}[Oracle covariance and explicit confidence radius]
 \label{ass:hyper-oracle-calibrated}
-The hyper-covariance used by the router is the true matrix:
-\begin{equation}
+The router uses the true positive-definite hyper-covariance. For the fixed-user
+route, define the realized candidate union and assume
+\begin{align}
+\widehat{\Omega}_t
+&\,=\,
+\Omega,
 \label{eq:hyper-oracle-omega-known}
-\widehat{\Omega}_t=\Omega .
-\end{equation}
-The matrix is positive definite:
-\begin{equation}
+\\
+\Omega
+&\,\succ\,
+0,
 \label{eq:hyper-oracle-omega-pd}
-\Omega \succ 0 .
-\end{equation}
-For the fixed-user route, the realized candidate union is
-\begin{equation}
-\label{eq:hyper-oracle-union}
+\\
 \mathcal A_T(U)
-=
+&\,\coloneqq\,
 \bigcup_{t=1}^{T}A_t(U).
-\end{equation}
-At most \(K_{\max}\) candidates appear through round \(T\):
-\begin{equation}
+\label{eq:hyper-oracle-union}
+\\
+|\mathcal A_T(U)|
+&\,\leq\,
+K_{\max},
 \label{eq:hyper-oracle-kmax}
-|\mathcal A_T(U)|\le K_{\max}.
-\end{equation}
-The \(\Omega\)-scaled feature norm is uniformly bounded:
-\begin{equation}
+\\
+x_t(a)^\top\Omega x_t(a)
+&\,\leq\,
+L_{\Omega}^{2}.
 \label{eq:hyper-oracle-feature-bound}
-x_t(a)^\top\Omega x_t(a)\le L_{\Omega}^{2}.
-\end{equation}
+\end{align}
 The archive uses the predictable birth-order slots of
 Lemma~\ref{lem:predictable}. Its realized candidate designs obey the
 deterministic cap
-\begin{equation}
-\label{eq:hyper-oracle-deff-cap}
+\begin{align}
 \max_{1\le s\le T+1}\max_{a\in\mathcal A_T(U)}
 d_{\mathrm{eff}}(\Omega;X_{a,s})
-\le
+&\,\leq\,
 \bar d_{\mathrm{eff},T}(\Omega)
 \quad\text{almost surely}.
-\end{equation}
-For $\delta\in(0,1)$, define
-\begin{equation}
-\label{eq:hyper-oracle-cT}
+\label{eq:hyper-oracle-deff-cap}
+\end{align}
+For \(\delta\in(0,1)\), define
+\begin{align}
 c_T^\Omega
-=
+&\,\coloneqq\,
 1+\log\!\left(1+\frac{TL_\Omega^2}{\lambda}\right)
-\end{equation}
-and
-\begin{equation}
-\label{eq:hyper-oracle-alpha}
+\label{eq:hyper-oracle-cT}
+\\
 \alpha_{\Omega,T}(\delta)
-=
+&\,\coloneqq\,
 \max\!\left\{
 1,\,
 \sigma\sqrt{
@@ -7265,39 +7195,37 @@ c_T^\Omega\bar d_{\mathrm{eff},T}(\Omega)
 +2\log(K_{\max}/\delta)}
 +\sqrt{\lambda}S_\Omega
 \right\}.
-\end{equation}
+\label{eq:hyper-oracle-alpha}
+\end{align}
 \end{assumption}
 
-The effective dimension used in the bound is the largest realized per-candidate effective dimension. For candidate \(a\), its design after round \(T\) is
-\begin{equation}
-\label{eq:hyper-oracle-XaT}
+The bound uses the largest realized candidate-wise effective dimension. For
+each \(a\), collect its selected feature rows and define
+\begin{align}
 X_{a,T+1}
-=
+&\,\coloneqq\,
 \begin{bmatrix}
 x_s(a_s)^\top
-\end{bmatrix}_{s\le T:\,a_s=a}.
-\end{equation}
-Define the candidate-wise effective dimension by
-\begin{equation}
-\label{eq:hyper-oracle-deff-a}
+\end{bmatrix}_{s\le T:\,a_s=a},
+\label{eq:hyper-oracle-XaT}
+\\
 d_{\mathrm{eff}}(\Omega;X_{a,T+1})
-=
+&\,\coloneqq\,
 \operatorname{tr}
 \!\left[
 X_{a,T+1}^{\top}X_{a,T+1}
 \left(
 X_{a,T+1}^{\top}X_{a,T+1}+\lambda\Omega^{-1}
 \right)^{-1}
-\right].
-\end{equation}
-The realized maximum candidate-wise effective dimension is
-\begin{equation}
-\label{eq:hyper-oracle-deff-max}
+\right],
+\label{eq:hyper-oracle-deff-a}
+\\
 d_{\mathrm{eff},T}^{\max}(\Omega)
-=
+&\,\coloneqq\,
 \max_{a\in\mathcal A_T(U)}
 d_{\mathrm{eff}}(\Omega;X_{a,T+1}).
-\end{equation}
+\label{eq:hyper-oracle-deff-max}
+\end{align}
 Assumption~\ref{ass:hyper-oracle-calibrated} requires
 $d_{\mathrm{eff},T}^{\max}(\Omega)\le
 \bar d_{\mathrm{eff},T}(\Omega)$ almost surely, and imposes the same cap on
@@ -7354,15 +7282,15 @@ Lemma~\ref{lem:hyper-sn} with failure probability
 \(\delta/K_{\max}\). For every realized slot and every \(t\le T\), the
 determinant calculation in Lemma~\ref{lem:hyper-elliptical} gives
 \begin{align}
-\label{eq:hyper-deff-proof-det-cap}
 \log
 \frac{\det(V_{a,t}^{\Omega})}
 {\det(\lambda\Omega^{-1})}
-&\le
+&\,\leq\,
 c_T^\Omega d_{\mathrm{eff}}(\Omega;X_{a,t})
 \\
-&\le
+&\,\leq\,
 c_T^\Omega\bar d_{\mathrm{eff},T}(\Omega).
+\label{eq:hyper-deff-proof-det-cap}
 \end{align}
 Thus the confidence radius in Lemma~\ref{lem:hyper-sn}, with
 \(\delta/K_{\max}\) in place of \(\delta\), is at most
@@ -7371,155 +7299,106 @@ Thus the confidence radius in Lemma~\ref{lem:hyper-sn}, with
 confidence intervals hold for every candidate after its birth and every
 \(t\le T\).
 
-Let the current-archive oracle action at round \(t\) be
-\begin{equation}
-\label{eq:hyper-deff-proof-oracle-action}
+On \(\mathcal E_\Omega\), define the current-archive oracle action, its
+exploration cost, and the confidence quadratic form by
+\begin{align}
 a_t^\star
-\in
+&\,\in\,
 \operatorname*{arg\,max}_{a\in A_t(U)}
-x_t(a)^\top\theta_a .
-\end{equation}
-The exploration cost is therefore
-\begin{equation}
+x_t(a)^\top\theta_a,
+\label{eq:hyper-deff-proof-oracle-action}
+\\
+L_t(U)
+&\,=\,
+x_t(a_t^\star)^\top\theta_{a_t^\star}
+-x_t(a_t)^\top\theta_{a_t},
 \label{eq:hyper-deff-proof-L}
-L_t(U)
-=
-x_t(a_t^\star)^\top\theta_{a_t^\star}
--
-x_t(a_t)^\top\theta_{a_t}.
-\end{equation}
-On \(\mathcal{E}_{\Omega}\), the upper confidence bound for the oracle action is
-\begin{align}
-\label{eq:hyper-deff-proof-oracle-ucb}
-x_t(a_t^\star)^\top\theta_{a_t^\star}
-&\le
-x_t(a_t^\star)^\top\widehat{\theta}_{a_t^\star,t}^{\Omega}
-+
-\alpha_{\Omega,T}(\delta)
-\sqrt{
-x_t(a_t^\star)^\top
-\left(V_{a_t^\star,t}^{\Omega}\right)^{-1}
-x_t(a_t^\star)
-}.
-\end{align}
-Since the router chooses the largest oracle-\(\Omega\) UCB score,
-\begin{align}
-\label{eq:hyper-deff-proof-argmax}
-&
-x_t(a_t^\star)^\top\widehat{\theta}_{a_t^\star,t}^{\Omega}
-+
-\alpha_{\Omega,T}(\delta)
-\sqrt{
-x_t(a_t^\star)^\top
-\left(V_{a_t^\star,t}^{\Omega}\right)^{-1}
-x_t(a_t^\star)
-}
-\notag
 \\
-&\quad\le
-x_t(a_t)^\top\widehat{\theta}_{a_t,t}^{\Omega}
-+
-\alpha_{\Omega,T}(\delta)
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}.
-\end{align}
-The same confidence event gives the selected arm's lower confidence bound:
-\begin{align}
-\label{eq:hyper-deff-proof-selected-lcb}
-x_t(a_t)^\top\widehat{\theta}_{a_t,t}^{\Omega}
-&\le
-x_t(a_t)^\top\theta_{a_t}
-+
-\alpha_{\Omega,T}(\delta)
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}.
-\end{align}
-Combining \eqref{eq:hyper-deff-proof-L}--\eqref{eq:hyper-deff-proof-selected-lcb} yields
-\begin{align}
-\label{eq:hyper-deff-proof-gap-width}
-L_t(U)
-&\le
-2\alpha_{\Omega,T}(\delta)
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}.
-\end{align}
-The rewards are bounded, so the same gap also satisfies
-\begin{equation}
-\label{eq:hyper-deff-proof-gap-one}
-0\le L_t(U)\le 1 .
-\end{equation}
-Define the realized uncertainty at the selected arm by
-\begin{equation}
+q_t(a)
+&\,\coloneqq\,
+x_t(a)^\top
+\left(V_{a,t}^{\Omega}\right)^{-1}
+x_t(a),
+\qquad
+q_t\,\coloneqq\,q_t(a_t).
 \label{eq:hyper-deff-proof-qt}
-q_t
-=
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t).
-\end{equation}
-Using \(\alpha_{\Omega,T}(\delta)\ge1\),
-\eqref{eq:hyper-deff-proof-gap-width} and
-\eqref{eq:hyper-deff-proof-gap-one} imply
+\end{align}
+
+The confidence bounds and the router's UCB choice give the single chain
 \begin{align}
-\label{eq:hyper-deff-proof-minwidth}
-L_t(U)
-&\le
-\min\{1,2\alpha_{\Omega,T}(\delta)\sqrt{q_t}\}
+x_t(a_t^\star)^\top\theta_{a_t^\star}
+&\,\leq\,
+x_t(a_t^\star)^\top\widehat{\theta}_{a_t^\star,t}^{\Omega}
++\alpha_{\Omega,T}(\delta)\sqrt{q_t(a_t^\star)}
+\label{eq:hyper-deff-proof-oracle-ucb}
 \\
-&\le
-2\alpha_{\Omega,T}(\delta)\min\{1,\sqrt{q_t}\}.
+&\,\leq\,
+x_t(a_t)^\top\widehat{\theta}_{a_t,t}^{\Omega}
++\alpha_{\Omega,T}(\delta)\sqrt{q_t},
+\label{eq:hyper-deff-proof-argmax}
+\\
+x_t(a_t)^\top\widehat{\theta}_{a_t,t}^{\Omega}
+&\,\leq\,
+x_t(a_t)^\top\theta_{a_t}
++\alpha_{\Omega,T}(\delta)\sqrt{q_t}.
+\label{eq:hyper-deff-proof-selected-lcb}
 \end{align}
-Summing over time gives
+Combining these rows with the definition of \(L_t(U)\), then using bounded
+rewards and \(\alpha_{\Omega,T}(\delta)\geq1\), yields
 \begin{align}
-\label{eq:hyper-deff-proof-sum-gap}
+L_t(U)
+&\,\leq\,
+2\alpha_{\Omega,T}(\delta)\sqrt{q_t},
+\label{eq:hyper-deff-proof-gap-width}
+\\
+0
+&\,\leq\,
+L_t(U)
+\,\leq\,
+1,
+\label{eq:hyper-deff-proof-gap-one}
+\\
+L_t(U)
+&\,\leq\,
+\min\{1,2\alpha_{\Omega,T}(\delta)\sqrt{q_t}\}
+\,\leq\,
+2\alpha_{\Omega,T}(\delta)\min\{1,\sqrt{q_t}\},
+\label{eq:hyper-deff-proof-minwidth}
+\\
 \sum_{t=1}^{T}L_t(U)
-&\le
+&\,\leq\,
 2\alpha_{\Omega,T}(\delta)
-\sum_{t=1}^{T}
-\min\{1,\sqrt{q_t}\}.
+\sum_{t=1}^{T}\min\{1,\sqrt{q_t}\}.
+\label{eq:hyper-deff-proof-sum-gap}
 \end{align}
-Partition the selected rounds by candidate.  Let \(n_a\) be the number of times candidate \(a\) is selected:
-\begin{equation}
-\label{eq:hyper-deff-proof-na}
+
+Partition the selected rounds by candidate. Let \(n_a\) be the number of
+selections of \(a\), and let \(q_{a,s}\) be its uncertainty at its \(s\)-th
+selection:
+\begin{align}
 n_a
-=
+&\,\coloneqq\,
 \sum_{t=1}^{T}\mathbf{1}\{a_t=a\}.
-\end{equation}
-Let the within-candidate uncertainties be
-\begin{equation}
-\label{eq:hyper-deff-proof-qas}
+\label{eq:hyper-deff-proof-na}
+\\
 q_{a,s}
-=
+&\,\coloneqq\,
 x_{a,s}^\top
 \left(V_{a,s-1}^{\Omega}\right)^{-1}
 x_{a,s}.
-\end{equation}
-Then the total width sum is
+\label{eq:hyper-deff-proof-qas}
+\end{align}
+Then Cauchy--Schwarz gives
 \begin{align}
-\label{eq:hyper-deff-proof-partition}
 \sum_{t=1}^{T}
 \min\{1,\sqrt{q_t}\}
-&=
-\sum_{a\in\mathcal A_T(U)}
-\sum_{s=1}^{n_a}
-\min\{1,\sqrt{q_{a,s}}\}.
-\end{align}
-Cauchy--Schwarz gives
-\begin{align}
-\label{eq:hyper-deff-proof-cauchy}
+&\,=\,
 \sum_{a\in\mathcal A_T(U)}
 \sum_{s=1}^{n_a}
 \min\{1,\sqrt{q_{a,s}}\}
-&\le
+\label{eq:hyper-deff-proof-partition}
+\\
+&\,\leq\,
 \sqrt{
 \left(
 \sum_{a\in\mathcal A_T(U)}n_a
@@ -7531,65 +7410,53 @@ Cauchy--Schwarz gives
 \right)
 }
 \\
-&=
+&\,=\,
 \sqrt{
 T
 \sum_{a\in\mathcal A_T(U)}
 \sum_{s=1}^{n_a}
 \min\{1,q_{a,s}\}
 }.
+\label{eq:hyper-deff-proof-cauchy}
 \end{align}
 Lemma~\ref{lem:hyper-elliptical} applied separately to each candidate yields
 \begin{align}
-\label{eq:hyper-deff-proof-elliptical-per-arm}
 \sum_{s=1}^{n_a}
 \min\{1,q_{a,s}\}
-&\le
+&\,\leq\,
 2
 \left[
 1+\log\!\left(1+\frac{n_aL_{\Omega}^{2}}{\lambda}\right)
 \right]
 d_{\mathrm{eff}}(\Omega;X_{a,T+1})
 \\
-&\le
-2
-\left[
-1+\log\!\left(1+\frac{TL_{\Omega}^{2}}{\lambda}\right)
-\right]
-\bar d_{\mathrm{eff},T}(\Omega).
-\end{align}
-Since at most \(K_{\max}\) candidates appeared through round \(T\),
-\begin{align}
-\label{eq:hyper-deff-proof-total-potential}
+&\,\leq\,
+2c_T^\Omega\bar d_{\mathrm{eff},T}(\Omega),
+\label{eq:hyper-deff-proof-elliptical-per-arm}
+\\
 \sum_{a\in\mathcal A_T(U)}
 \sum_{s=1}^{n_a}
 \min\{1,q_{a,s}\}
-&\le
-2K_{\max}
-\left[
-1+\log\!\left(1+\frac{TL_{\Omega}^{2}}{\lambda}\right)
-\right]
+&\,\leq\,
+2K_{\max}c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega).
+\label{eq:hyper-deff-proof-total-potential}
 \end{align}
 Substituting \eqref{eq:hyper-deff-proof-total-potential} into \eqref{eq:hyper-deff-proof-cauchy} and then into \eqref{eq:hyper-deff-proof-sum-gap} proves
 \begin{align}
-\label{eq:hyper-deff-proof-pathwise}
 \sum_{t=1}^{T}L_t(U)
-&\le
+&\,\leq\,
 2\alpha_{\Omega,T}(\delta)
 \sqrt{
-2K_{\max}T
-\left[
-1+\log\!\left(1+\frac{TL_{\Omega}^{2}}{\lambda}\right)
-\right]
+2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
+\label{eq:hyper-deff-proof-pathwise}
 \end{align}
 This is \eqref{eq:hyper-deff-bound-pathwise}.  Taking expectations and splitting on \(\mathcal{E}_{\Omega}\) gives
 \begin{align}
-\label{eq:hyper-deff-proof-expectation-split}
 \sum_{t=1}^{T}\mathbb{E}[L_t(U)]
-&=
+&\,=\,
 \mathbb{E}
 \!\left[
 \mathbf{1}_{\mathcal{E}_{\Omega}}
@@ -7602,17 +7469,14 @@ This is \eqref{eq:hyper-deff-bound-pathwise}.  Taking expectations and splitting
 \sum_{t=1}^{T}L_t(U)
 \right]
 \\
-&\le
+&\,\leq\,
 2\alpha_{\Omega,T}(\delta)
 \sqrt{
-2K_{\max}T
-\left[
-1+\log\!\left(1+\frac{TL_{\Omega}^{2}}{\lambda}\right)
-\right]
+2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }
-+
-\delta T .
++\delta T .
+\label{eq:hyper-deff-proof-expectation-split}
 \end{align}
 This is \eqref{eq:hyper-deff-bound-expectation}. For fixed problem
 parameters, \(c_T^\Omega=O(\log T)\) and
@@ -7634,50 +7498,43 @@ router has the smaller certificate: the full comparison must also include
 
 The actual Hyper-Ridge PersonalEvo router uses an estimate \(\widehat{\Omega}_t\).  We therefore separate two issues.  First, if \(\widehat{\Omega}_t\) is close to \(\Omega\) in relative spectral norm, the oracle proof above is stable.  Second, proving that an online archive estimator achieves this closeness is a separate statistical problem; we state it as Conjecture~\ref{conj:err-control} rather than claiming it as proven.
 
-The relative covariance error at time \(t\) is
-\begin{equation}
-\label{eq:hyper-est-rho-t}
+Define the pointwise and uniform relative covariance errors, together with the
+estimated and oracle design matrices, by
+\begin{align}
 \rho_{\Omega,t}
-=
+&\,\coloneqq\,
 \left\|
 \Omega^{-1/2}
 \left(
 \widehat{\Omega}_t-\Omega
 \right)
 \Omega^{-1/2}
-\right\|_{\mathrm{op}} .
-\end{equation}
-The uniform relative covariance error through horizon \(T\) is
-\begin{equation}
+\right\|_{\mathrm{op}},
+\label{eq:hyper-est-rho-t}
+\\
 \label{eq:hyper-est-rho-T}
 \rho_{\Omega,T}
-=
-\max_{1\le t\le T}\rho_{\Omega,t} .
-\end{equation}
-The estimated-\(\Omega\) design matrix is
-\begin{equation}
+&\,\coloneqq\,
+\max_{1\le t\le T}\rho_{\Omega,t},
+\\
 \label{eq:hyper-est-Vhat}
 V_{a,t}^{\widehat{\Omega}}
-=
+&\,\coloneqq\,
 X_{a,t}^{\top}X_{a,t}
-+
-\lambda \widehat{\Omega}_t^{-1}.
-\end{equation}
-The oracle design matrix is
-\begin{equation}
++\lambda \widehat{\Omega}_t^{-1},
+\\
 \label{eq:hyper-est-Vomega}
 V_{a,t}^{\Omega}
-=
+&\,\coloneqq\,
 X_{a,t}^{\top}X_{a,t}
-+
-\lambda \Omega^{-1}.
-\end{equation}
++\lambda \Omega^{-1}.
+\end{align}
 
 For a multiplier \(\widetilde\alpha_T\ge1\), define the excess width caused by
 using \(\widehat\Omega_t\) instead of \(\Omega\):
 \begin{align}
 \widehat w_t
-&=
+&\,\coloneqq\,
 \min\!\left\{
 1,
 \sqrt{
@@ -7685,197 +7542,183 @@ x_t(a_t)^\top
 \left(V_{a_t,t}^{\widehat\Omega}\right)^{-1}
 x_t(a_t)}
 \right\},
+\notag
 \\
 w_t^\Omega
-&=
+&\,\coloneqq\,
 \min\!\left\{
 1,
 \sqrt{
 x_t(a_t)^\top
 \left(V_{a_t,t}^{\Omega}\right)^{-1}
 x_t(a_t)}
-\right\}.
-\end{align}
-\begin{align}
-\label{eq:hyper-est-err-def}
+\right\},
+\notag
+\\
+[z]_{+}
+&\,\coloneqq\,
+\max\{z,0\},
+\label{eq:hyper-est-positive-part}
+\\
 \operatorname{WidthErr}_T(\widehat{\Omega},\Omega)
-&=
+&\,\coloneqq\,
 2\widetilde\alpha_T
 \sum_{t=1}^{T}
 \left[\widehat w_t-w_t^\Omega\right]_{+}.
+\label{eq:hyper-est-err-def}
 \end{align}
-Here the positive part is
-\begin{equation}
-\label{eq:hyper-est-positive-part}
-[z]_{+}
-=
-\max\{z,0\}.
-\end{equation}
 
 \begin{lemma}[Relative spectral error implies Loewner control]
 \label{lem:hyper-perturb-loewner}
 Assume
-\begin{equation}
+\begin{align}
+\rho_{\Omega,T}
+&\,\leq\,
+\varepsilon,
 \label{eq:hyper-perturb-eps}
-\rho_{\Omega,T}\le \varepsilon
-\end{equation}
-for some
-\begin{equation}
+\\
+0
+&\,\leq\,
+\varepsilon
+\,<\,
+1.
 \label{eq:hyper-perturb-eps-range}
-0\le \varepsilon <1 .
-\end{equation}
-Then, for every \(t\),
-\begin{equation}
-\label{eq:hyper-perturb-omega-loewner}
+\end{align}
+Then, for every candidate \(a\) and round \(t\),
+\begin{align}
 (1-\varepsilon)\Omega
-\preceq
+&\,\preceq\,
 \widehat{\Omega}_t
-\preceq
+\,\preceq\,
 (1+\varepsilon)\Omega .
-\end{equation}
-Moreover,
-\begin{equation}
-\label{eq:hyper-perturb-inv-loewner}
+\label{eq:hyper-perturb-omega-loewner}
+\\
 \frac{1}{1+\varepsilon}\Omega^{-1}
-\preceq
+&\,\preceq\,
 \widehat{\Omega}_t^{-1}
-\preceq
+\,\preceq\,
 \frac{1}{1-\varepsilon}\Omega^{-1}.
-\end{equation}
-Finally, for every candidate and round,
-\begin{equation}
-\label{eq:hyper-perturb-V-lower}
+\label{eq:hyper-perturb-inv-loewner}
+\\
 V_{a,t}^{\widehat{\Omega}}
-\;\succeq\;
+&\,\succeq\,
 \frac{1}{1+\varepsilon}
 V_{a,t}^{\Omega}.
-\end{equation}
+\label{eq:hyper-perturb-V-lower}
+\end{align}
 \end{lemma}
 
 \begin{proof}
-The definition of \(\rho_{\Omega,T}\) implies
-\begin{equation}
-\label{eq:hyper-perturb-proof-relative}
+The definition of \(\rho_{\Omega,T}\), followed by adding \(I\), congruence by
+\(\Omega^{1/2}\), and order-reversing inversion, gives
+\begin{align}
 -\varepsilon I
-\preceq
+&\,\preceq\,
 \Omega^{-1/2}
 \left(
 \widehat{\Omega}_t-\Omega
 \right)
 \Omega^{-1/2}
-\preceq
+\,\preceq\,
 \varepsilon I .
-\end{equation}
-Adding \(I\) gives
-\begin{equation}
-\label{eq:hyper-perturb-proof-addI}
+\label{eq:hyper-perturb-proof-relative}
+\\
 (1-\varepsilon)I
-\preceq
+&\,\preceq\,
 \Omega^{-1/2}\widehat{\Omega}_t\Omega^{-1/2}
-\preceq
+\,\preceq\,
 (1+\varepsilon)I .
-\end{equation}
-Congruence by \(\Omega^{1/2}\) gives
-\begin{equation}
-\label{eq:hyper-perturb-proof-omega}
+\label{eq:hyper-perturb-proof-addI}
+\\
 (1-\varepsilon)\Omega
-\preceq
+&\,\preceq\,
 \widehat{\Omega}_t
-\preceq
+\,\preceq\,
 (1+\varepsilon)\Omega .
-\end{equation}
-Inverting reverses the Loewner order:
-\begin{equation}
-\label{eq:hyper-perturb-proof-inv}
+\label{eq:hyper-perturb-proof-omega}
+\\
 \frac{1}{1+\varepsilon}\Omega^{-1}
-\preceq
+&\,\preceq\,
 \widehat{\Omega}_t^{-1}
-\preceq
+\,\preceq\,
 \frac{1}{1-\varepsilon}\Omega^{-1}.
-\end{equation}
-Therefore
+\label{eq:hyper-perturb-proof-inv}
+\end{align}
+Substituting the lower inverse bound into the design matrix gives
 \begin{align}
-\label{eq:hyper-perturb-proof-V}
 V_{a,t}^{\widehat{\Omega}}
-&=
+&\,=\,
 X_{a,t}^{\top}X_{a,t}
-+
-\lambda\widehat{\Omega}_t^{-1}
++\lambda\widehat{\Omega}_t^{-1}
 \\
-&\succeq
+&\,\succeq\,
 X_{a,t}^{\top}X_{a,t}
-+
-\frac{\lambda}{1+\varepsilon}\Omega^{-1}
++\frac{\lambda}{1+\varepsilon}\Omega^{-1}
 \\
-&\succeq
+&\,\succeq\,
 \frac{1}{1+\varepsilon}
 \left(
 X_{a,t}^{\top}X_{a,t}
-+
-\lambda\Omega^{-1}
++\lambda\Omega^{-1}
 \right)
 \\
-&=
+&\,=\,
 \frac{1}{1+\varepsilon}
 V_{a,t}^{\Omega}.
+\label{eq:hyper-perturb-proof-V}
 \end{align}
 \end{proof}
 
 \begin{lemma}[Width and effective-dimension stability]
 \label{lem:hyper-perturb-width}
-Under the assumptions of Lemma~\ref{lem:hyper-perturb-loewner}, every feature vector \(x\) satisfies
-\begin{equation}
-\label{eq:hyper-perturb-width}
+Under the assumptions of Lemma~\ref{lem:hyper-perturb-loewner}, every feature
+vector \(x\) and fixed design matrix \(X\) satisfy
+\begin{align}
 x^\top
 \left(V_{a,t}^{\widehat{\Omega}}\right)^{-1}
 x
-\le
+&\,\leq\,
 (1+\varepsilon)
 x^\top
 \left(V_{a,t}^{\Omega}\right)^{-1}
 x .
-\end{equation}
-For any fixed design matrix \(X\), the estimated-geometry effective dimension satisfies
-\begin{equation}
-\label{eq:hyper-perturb-deff}
+\label{eq:hyper-perturb-width}
+\\
 d_{\mathrm{eff}}(\widehat{\Omega}_t;X)
-\le
+&\,\leq\,
 (1+\varepsilon)
 d_{\mathrm{eff}}(\Omega;X).
-\end{equation}
+\label{eq:hyper-perturb-deff}
+\end{align}
 \end{lemma}
 
 \begin{proof}
-From \eqref{eq:hyper-perturb-V-lower}, inversion gives
-\begin{equation}
-\label{eq:hyper-perturb-width-proof-inv}
+From \eqref{eq:hyper-perturb-V-lower}, inversion, quadratic-form monotonicity,
+and trace monotonicity with \(A=X^\top X\succeq0\) give
+\begin{align}
 \left(V_{a,t}^{\widehat{\Omega}}\right)^{-1}
-\preceq
+&\,\preceq\,
 (1+\varepsilon)
 \left(V_{a,t}^{\Omega}\right)^{-1}.
-\end{equation}
-Taking the quadratic form in direction \(x\) gives
-\begin{align}
-\label{eq:hyper-perturb-width-proof-qf}
+\label{eq:hyper-perturb-width-proof-inv}
+\\
 x^\top
 \left(V_{a,t}^{\widehat{\Omega}}\right)^{-1}
 x
-&\le
+&\,\leq\,
 (1+\varepsilon)
 x^\top
 \left(V_{a,t}^{\Omega}\right)^{-1}
 x .
-\end{align}
-For the effective dimension, write
-\begin{equation}
+\label{eq:hyper-perturb-width-proof-qf}
+\\
+A
+&\,\coloneqq\,
+X^\top X,
 \label{eq:hyper-perturb-deff-proof-A}
-A=X^\top X .
-\end{equation}
-Then
-\begin{align}
-\label{eq:hyper-perturb-deff-proof}
+\\
 d_{\mathrm{eff}}(\widehat{\Omega}_t;X)
-&=
+&\,=\,
 \operatorname{tr}
 \!\left[
 A
@@ -7884,7 +7727,7 @@ A+\lambda\widehat{\Omega}_t^{-1}
 \right)^{-1}
 \right]
 \\
-&\le
+&\,\leq\,
 (1+\varepsilon)
 \operatorname{tr}
 \!\left[
@@ -7894,9 +7737,10 @@ A+\lambda\Omega^{-1}
 \right)^{-1}
 \right]
 \\
-&=
+&\,=\,
 (1+\varepsilon)
 d_{\mathrm{eff}}(\Omega;X).
+\label{eq:hyper-perturb-deff-proof}
 \end{align}
 \end{proof}
 
@@ -7934,26 +7778,24 @@ test feature \(x\). Assume also that
 \end{equation}
 On the intersection of these two events,
 \begin{align}
-\label{eq:hyper-est-prop-err-bound}
 \operatorname{WidthErr}_T(\widehat{\Omega},\Omega)
-&\le
+&\,\leq\,
 2\widetilde\alpha_T
 \left(\sqrt{1+\varepsilon}-1\right)
 \sqrt{
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 },
-\end{align}
-and
-\begin{align}
-\label{eq:hyper-est-prop-total-bound}
+\label{eq:hyper-est-prop-err-bound}
+\\
 \sum_{t=1}^{T}L_t(U)
-&\le
+&\,\leq\,
 2\widetilde\alpha_T\sqrt{1+\varepsilon}
 \sqrt{
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
+\label{eq:hyper-est-prop-total-bound}
 \end{align}
 If the intersection has probability at least \(1-\eta\), then the right-hand
 side of \eqref{eq:hyper-est-prop-total-bound} plus \(\eta T\) bounds the
@@ -7961,113 +7803,78 @@ expected cumulative exploration cost.
 \end{proposition}
 
 \begin{proof}
-Lemma~\ref{lem:hyper-perturb-width} implies, for every selected round,
+Lemma~\ref{lem:hyper-perturb-width} and
+\(\min\{1,cz\}\leq c\min\{1,z\}\) for \(c\geq1\) give
 \begin{align}
+\widehat w_t
+&\,\leq\,
+\sqrt{1+\varepsilon}\,w_t^\Omega,
 \label{eq:hyper-est-proof-width}
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\widehat{\Omega}}\right)^{-1}
-x_t(a_t)
-}
-&\le
-\sqrt{1+\varepsilon}
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}.
-\end{align}
-The map \(z\mapsto \min\{1,z\}\) is one-Lipschitz and monotone, so
-\begin{align}
-\label{eq:hyper-est-proof-min-diff}
-&
-\left[
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\widehat{\Omega}}\right)^{-1}
-x_t(a_t)
-}
-\right\}
--
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}
-\right\}
-\right]_{+}
 \\
-&\le
+\left[\widehat w_t-w_t^\Omega\right]_+
+&\,\leq\,
 \left(\sqrt{1+\varepsilon}-1\right)
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}
-\right\}.
+w_t^\Omega.
+\label{eq:hyper-est-proof-min-diff}
 \end{align}
-Summing and using the oracle width-sum bound from the proof of Proposition~\ref{prop:deff-bound-app} gives
+The definition of \(\operatorname{WidthErr}_T\) and the oracle width-sum bound
+from the proof of Proposition~\ref{prop:deff-bound-app} now give
 \begin{align}
-\label{eq:hyper-est-proof-err}
 \operatorname{WidthErr}_T(\widehat{\Omega},\Omega)
-&\le
+&\,\leq\,
 2\widetilde\alpha_T
 \left(\sqrt{1+\varepsilon}-1\right)
-\sum_{t=1}^{T}
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\Omega}\right)^{-1}
-x_t(a_t)
-}
-\right\}
+\sum_{t=1}^{T}w_t^\Omega
 \\
-&\le
+&\,\leq\,
 2\widetilde\alpha_T
 \left(\sqrt{1+\varepsilon}-1\right)
 \sqrt{
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
+\label{eq:hyper-est-proof-err}
 \end{align}
-On \(\mathcal E_{\mathrm{conf}}(\widehat\Omega)\), optimism gives
-\begin{equation}
+
+On \(\mathcal E_{\mathrm{conf}}(\widehat\Omega)\), the same UCB argument and
+the first row above yield
+\begin{align*}
 L_t(U)
-\le
+&\,\leq\,
 2\widetilde\alpha_T
-\min\!\left\{
-1,
+\widehat w_t
+\,\leq\,
+2\widetilde\alpha_T\sqrt{1+\varepsilon}\,w_t^\Omega,
+\\
+\sum_{t=1}^{T}L_t(U)
+&\,\leq\,
+2\widetilde\alpha_T\sqrt{1+\varepsilon}
+\sum_{t=1}^{T}w_t^\Omega
+\\
+&\,\leq\,
+2\widetilde\alpha_T\sqrt{1+\varepsilon}
 \sqrt{
-x_t(a_t)^\top
-\left(V_{a_t,t}^{\widehat\Omega}\right)^{-1}
-x_t(a_t)
-}
-\right\}.
-\end{equation}
-Apply \eqref{eq:hyper-est-proof-width}, sum over \(t\), and use the same
-candidate-wise potential bound to obtain
-\eqref{eq:hyper-est-prop-total-bound}. On the complement of an event with
-probability \(1-\eta\), bounded rewards give
-\(\sum_{t=1}^T L_t(U)\le T\), proving the expectation statement.
+2K_{\max}T\,c_T^\Omega
+\bar d_{\mathrm{eff},T}(\Omega)
+}.
+\end{align*}
+This is \eqref{eq:hyper-est-prop-total-bound}. On the complement of an event
+with probability \(1-\eta\), bounded rewards give
+\(\sum_{t=1}^T L_t(U)\leq T\), which adds \(\eta T\) in expectation.
 \end{proof}
 
-A numerical perturbation example clarifies the scale.  If
-\begin{equation}
+A numerical perturbation example clarifies the scale:
+\begin{align}
+\varepsilon
+&\,=\,
+0.21,
 \label{eq:hyper-est-example-eps}
-\varepsilon=0.21,
-\end{equation}
-then
-\begin{equation}
+\\
+\sqrt{1+\varepsilon}
+&\,=\,
+1.10.
 \label{eq:hyper-est-example-sqrt}
-\sqrt{1+\varepsilon}=1.10 .
-\end{equation}
+\end{align}
 Thus the estimated-geometry width is at most \(1.10\) times the
 oracle-geometry width on the spectral event. Turning this comparison into an
 exploration bound also requires the confidence event. Neither event has been
@@ -8896,35 +8703,36 @@ post-routing conditional sub-Gaussian bound
 \left\|
 \Omega^{-1/2}(\widehat\Omega-\Omega)\Omega^{-1/2}
 \right\|_{\mathrm{op}}
-\le \varepsilon
-\qquad\text{for some }0\le\varepsilon<1.
+\,\leq\,
+\varepsilon,
+\qquad
+0\leq\varepsilon<1.
 \end{equation}
 For candidate \(a\), define
-\begin{equation}
+\begin{align}
 V_{a,t}^{\widehat\Omega}
-=
+&\,=\,
 X_{a,t}^\top X_{a,t}+\lambda\widehat\Omega^{-1},
-\qquad
+&
 \widehat\theta_{a,t}^{\widehat\Omega}
-=
+&\,=\,
 (V_{a,t}^{\widehat\Omega})^{-1}X_{a,t}^\top y_{a,t}.
-\end{equation}
+\end{align}
 Define
-\begin{equation}
+\begin{align}
 \alpha_{\widehat\Omega,T}(\varepsilon,\delta_{\rm route})
-=
-\max\!\left\{
+&\,=\,
+\max\!\bigg\{
 1,\,
-\sigma
-\sqrt{
+\sigma\sqrt{
 d\log\!\left(1+\frac{(1+\varepsilon)TL_\Omega^2}{\lambda}\right)
 +
 2\log\!\left(\frac{K_{\max}}{\delta_{\rm route}}\right)
 }
 +
 \sqrt{\frac{\lambda}{1-\varepsilon}}\,S_\Omega
-\right\}.
-\end{equation}
+\bigg\}.
+\end{align}
 Then, conditional on \(\mathcal F_0^{\rm route}\), with probability at least
 \(1-\delta_{\rm route}\), uniformly over all routing candidates \(a\), all
 \(t\le T\), and all predictable test features \(x\),
@@ -8932,7 +8740,7 @@ Then, conditional on \(\mathcal F_0^{\rm route}\), with probability at least
 \left|
 x^\top(\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a)
 \right|
-\le
+\,\leq\,
 \alpha_{\widehat\Omega,T}(\varepsilon,\delta_{\rm route})
 \sqrt{x^\top(V_{a,t}^{\widehat\Omega})^{-1}x}.
 \end{equation}
@@ -8940,63 +8748,60 @@ x^\top(\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a)
 
 \begin{proof}
 Fix a routing candidate \(a\). Conditional on
-\(\mathcal F_0^{\rm route}\), set
-\begin{equation}
-A=\lambda\widehat\Omega^{-1}.
-\end{equation}
-Then \(A\) is deterministic and positive definite.  Define
-\begin{equation}
-S_{a,t}=\sum_{s\in\mathcal{T}_{a,t}}x_s(a)\xi_s,
-\qquad
+\(\mathcal F_0^{\rm route}\), the matrix
+\(A=\lambda\widehat\Omega^{-1}\) is deterministic and positive definite. Set
+\begin{align}
+S_{a,t}
+&\,=\,
+\sum_{s\in\mathcal{T}_{a,t}}x_s(a)\xi_s,
+&
 V_{a,t}^{\widehat\Omega}
-=
+&\,=\,
 A+\sum_{s\in\mathcal{T}_{a,t}}x_s(a)x_s(a)^\top.
-\end{equation}
-Using the reward model,
-\begin{equation}
+\end{align}
+The reward model and the triangle inequality give
+\begin{align}
 \widehat\theta_{a,t}^{\widehat\Omega}-\theta_a
-=
+&\,=\,
 (V_{a,t}^{\widehat\Omega})^{-1}S_{a,t}
 -
 (V_{a,t}^{\widehat\Omega})^{-1}A\theta_a.
-\end{equation}
-Hence
-\begin{equation}
+\\
 \|\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a\|_{V_{a,t}^{\widehat\Omega}}
-\le
+&\,\leq\,
 \|S_{a,t}\|_{(V_{a,t}^{\widehat\Omega})^{-1}}
 +
 \|A\theta_a\|_{(V_{a,t}^{\widehat\Omega})^{-1}}.
-\end{equation}
+\end{align}
 Because \(V_{a,t}^{\widehat\Omega}\succeq A\),
-\begin{equation}
+\begin{align}
 \|A\theta_a\|_{(V_{a,t}^{\widehat\Omega})^{-1}}^2
-\le
+&\,\leq\,
 \theta_a^\top A\theta_a
-=
+\,=\,
 \lambda\theta_a^\top\widehat\Omega^{-1}\theta_a.
-\end{equation}
-The relative error assumption implies
-\begin{equation}
-(1-\varepsilon)\Omega\preceq\widehat\Omega\preceq(1+\varepsilon)\Omega,
-\end{equation}
-and therefore
-\begin{equation}
-\widehat\Omega^{-1}\preceq\frac{1}{1-\varepsilon}\Omega^{-1}.
-\end{equation}
-Using \(\|\theta_a\|_{\Omega^{-1}}\le S_\Omega\), we get
-\begin{equation}
+\\
+(1-\varepsilon)\Omega
+&\,\preceq\,
+\widehat\Omega
+\,\preceq\,
+(1+\varepsilon)\Omega,
+\qquad
+\widehat\Omega^{-1}
+\,\preceq\,
+\frac{1}{1-\varepsilon}\Omega^{-1}.
+\\
 \|A\theta_a\|_{(V_{a,t}^{\widehat\Omega})^{-1}}
-\le
+&\,\leq\,
 \sqrt{\frac{\lambda}{1-\varepsilon}}\,S_\Omega.
-\end{equation}
+\end{align}
 It remains to control the martingale term. If \(\sigma=0\), conditional
 sub-Gaussianity implies \(S_{a,t}=0\) almost surely and the claim follows from
 the bias bound. Suppose \(\sigma>0\). For fixed \(q\in\mathbb{R}^d\),
 define
-\begin{equation}
+\begin{align}
 M_t(q)
-=
+&\,=\,
 \exp\!\left(
 \frac{q^\top S_{a,t}}{\sigma}
 -
@@ -9005,9 +8810,7 @@ q^\top
 \left(V_{a,t}^{\widehat\Omega}-A\right)
 q
 \right).
-\end{equation}
-If round \(t\) selects candidate \(a\), conditional sub-Gaussianity gives
-\begin{equation}
+\\
 \mathbb E\!\left[
 \exp\!\left(
 \frac{q^\top x_t(a)\xi_t}{\sigma}
@@ -9015,120 +8818,113 @@ If round \(t\) selects candidate \(a\), conditional sub-Gaussianity gives
 \right)
 \middle|\mathcal F_{t-1}
 \right]
-\le1.
-\end{equation}
+&\,\leq\,
+1
+\quad\text{when round \(t\) selects \(a\)}.
+\end{align}
 If round \(t\) does not select \(a\), then \(S_{a,t}\) and
 \(V_{a,t}^{\widehat\Omega}\) do not change. Therefore
 \((M_t(q))_{t\le T}\) is a nonnegative supermartingale with initial value one.
 
-Let \(Q\) be Gaussian with precision \(A\), so that \(Q\) has density
-\begin{equation}
+Let \(Q\) be Gaussian with precision \(A\). Its density and the corresponding
+mixture process are
+\begin{align}
 \varphi_A(q)
-=
+&\,=\,
 \frac{\det(A)^{1/2}}{(2\pi)^{d/2}}
-\exp\!\left(-\frac{1}{2}q^\top A q\right).
-\end{equation}
-Define
-\begin{equation}
+\exp\!\left(-\frac{1}{2}q^\top A q\right),
+&
 \mathcal{M}_t
-=
+&\,=\,
 \int_{\mathbb{R}^d} M_t(q)\,\varphi_A(q)\,dq.
-\end{equation}
+\end{align}
 Tonelli's theorem and the supermartingale property of \(M_t(q)\) imply that
 \((\mathcal{M}_t)_{t\le T}\) is a nonnegative supermartingale with
-\(\mathcal{M}_0=1\).  Completing the square in the Gaussian integral gives
-\begin{equation}
+\(\mathcal{M}_0=1\). Completing the square and then applying Ville's inequality
+give
+\begin{align}
 \mathcal{M}_t
-=
+&\,=\,
 \frac{\det(A)^{1/2}}{\det(V_{a,t}^{\widehat\Omega})^{1/2}}
 \exp\!\left(
 \frac{\|S_{a,t}\|_{(V_{a,t}^{\widehat\Omega})^{-1}}^2}{2\sigma^2}
 \right).
-\end{equation}
-Ville's inequality gives
-\begin{equation}
+\\
 \Pr\!\left(\sup_{t\le T}\mathcal{M}_t\ge \frac1{\delta_a}\right)
-\le
-\delta_a.
-\end{equation}
-Thus, with probability at least \(1-\delta_a\), uniformly over \(t\le T\),
-\begin{equation}
+&\,\leq\,
+\delta_a,
+\\
 \|S_{a,t}\|_{(V_{a,t}^{\widehat\Omega})^{-1}}
-\le
+&\,\leq\,
 \sigma
 \sqrt{
 2\log\!\left(
 \frac{\det(V_{a,t}^{\widehat\Omega})^{1/2}}
 {\det(A)^{1/2}\delta_a}
 \right)
-}.
-\end{equation}
-We next bound the determinant ratio.  Since \(A=\lambda\widehat\Omega^{-1}\),
-\begin{equation}
+}
+\quad\text{uniformly over \(t\leq T\)}.
+\end{align}
+The last row holds with probability at least \(1-\delta_a\).
+To bound its determinant ratio, use \(A=\lambda\widehat\Omega^{-1}\) and
+\(\widehat\Omega\preceq(1+\varepsilon)\Omega\):
+\begin{align}
 \frac{\det(V_{a,t}^{\widehat\Omega})}{\det(A)}
-=
+&\,=\,
 \det\!\left(
 I+\lambda^{-1}\widehat\Omega^{1/2}X_{a,t}^\top X_{a,t}\widehat\Omega^{1/2}
 \right).
-\end{equation}
-The relation \(\widehat\Omega\preceq(1+\varepsilon)\Omega\) implies
-\begin{equation}
+\\
 \operatorname{tr}\!\left(
 \lambda^{-1}\widehat\Omega^{1/2}X_{a,t}^\top X_{a,t}\widehat\Omega^{1/2}
 \right)
-=
+&\,=\,
 \lambda^{-1}\operatorname{tr}(X_{a,t}\widehat\Omega X_{a,t}^\top)
-\le
+\\
+&\,\leq\,
 \frac{1+\varepsilon}{\lambda}
-\sum_{s\in\mathcal{T}_{a,t}}x_s(a)^\top\Omega x_s(a).
-\end{equation}
-By the feature-radius assumption,
-\begin{equation}
 \sum_{s\in\mathcal{T}_{a,t}}x_s(a)^\top\Omega x_s(a)
-\le
-TL_\Omega^2.
-\end{equation}
+\,\leq\,
+\frac{(1+\varepsilon)TL_\Omega^2}{\lambda}.
+\end{align}
 For any positive-semidefinite \(d\times d\) matrix \(M\) with eigenvalues
 \(\nu_1,\ldots,\nu_d\),
-\begin{equation}
+\begin{align}
 \det(I+M)
-=
+&\,=\,
 \prod_{k=1}^d(1+\nu_k)
-\le
+\,\leq\,
 \left(1+\sum_{k=1}^d\nu_k\right)^d
-=
+\,=\,
 (1+\operatorname{tr}M)^d.
-\end{equation}
-Therefore
-\begin{equation}
+\\
 2\log\!\left(
 \frac{\det(V_{a,t}^{\widehat\Omega})^{1/2}}
 {\det(A)^{1/2}\delta_a}
 \right)
-\le
+&\,\leq\,
 d\log\!\left(1+\frac{(1+\varepsilon)TL_\Omega^2}{\lambda}\right)
 +
 2\log(1/\delta_a).
-\end{equation}
+\end{align}
 Taking \(\delta_a=\delta_{\rm route}/K_{\max}\) and applying a union bound over
 the fixed routing archive gives, with probability at least
 \(1-\delta_{\rm route}\), the simultaneous bound
-\begin{equation}
+\begin{align}
 \|\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a\|_{V_{a,t}^{\widehat\Omega}}
-\le
+&\,\leq\,
 \alpha_{\widehat\Omega,T}(\varepsilon,\delta_{\rm route})
-\end{equation}
-for every candidate \(a\) and every \(t\le T\).  Finally, for every predictable
-test feature \(x\), Cauchy--Schwarz in the
-\(V_{a,t}^{\widehat\Omega}\)-inner product gives
-\begin{equation}
+\\
 \left|
 x^\top(\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a)
 \right|
-\le
+&\,\leq\,
 \|\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a\|_{V_{a,t}^{\widehat\Omega}}
 \sqrt{x^\top(V_{a,t}^{\widehat\Omega})^{-1}x}.
-\end{equation}
+\end{align}
+The two rows hold for every candidate \(a\), every \(t\leq T\), and every
+predictable test feature \(x\). The second row is Cauchy--Schwarz in the
+\(V_{a,t}^{\widehat\Omega}\)-inner product.
 Substituting the preceding simultaneous parameter bound proves the claim.
 \end{proof}
 
@@ -9147,42 +8943,50 @@ archive.  For each calibration candidate \(i\), the algorithm collects
 \(m=m_T\) calibration rewards under the exogenous uniform-routing calibration
 policy:
 \begin{equation}
-y_{i,j}:=r_{i,j}-b(u_{i,j})
-=x_{i,j}^{\top}\theta_i+\xi_{i,j},
+y_{i,j}
+\,\coloneqq\,
+r_{i,j}-b(u_{i,j})
+\,=\,
+x_{i,j}^{\top}\theta_i+\xi_{i,j},
 \qquad j=1,\ldots,m.
 \end{equation}
 Let
-\begin{equation}
-X_i=
+\begin{align}
+X_i
+&\,=\,
 \begin{bmatrix}
 x_{i,1}^{\top}\\
 \vdots\\
 x_{i,m}^{\top}
 \end{bmatrix},
-\qquad
-G_i=X_i^\top X_i.
-\end{equation}
-On the event that \(G_i\) is invertible, set
-\begin{equation}
-\widetilde\theta_i=G_i^{-1}X_i^\top y_i;
-\end{equation}
-otherwise set \(\widetilde\theta_i=0\).  For a deterministic ridge floor
-\(\gamma=\gamma_T>0\), define
-\begin{equation}
+&
+G_i
+&\,=\,
+X_i^\top X_i,
+\\
+\widetilde\theta_i
+&\,=\,
+\begin{cases}
+G_i^{-1}X_i^\top y_i, & G_i\text{ invertible},\\
+0, & \text{otherwise}.
+\end{cases}
+\end{align}
+For a deterministic ridge floor \(\gamma=\gamma_T>0\), define
+\begin{align}
 \widehat\Omega
-=
+&\,=\,
 \frac1N\sum_{i=1}^N\widetilde\theta_i\widetilde\theta_i^\top+\gamma I_d.
-\end{equation}
-During all \(T\) post-calibration routing rounds, the router uses the frozen
-estimate
-\begin{equation}
-\widehat\Omega_t=\widehat\Omega.
-\end{equation}
+\\
+\widehat\Omega_t
+&\,=\,
+\widehat\Omega,
+\qquad t=1,\ldots,T.
+\end{align}
 The post-calibration routing archive is fixed before routing begins and has
 cardinality at most \(K_{\max}\).  The routing UCB rule uses
 \begin{equation}
 \alpha_T
-=
+\,=\,
 \alpha_{\widehat\Omega,T}(\varepsilon_*,\delta_{\rm route}),
 \end{equation}
 where \(\alpha_{\widehat\Omega,T}\) is defined in
@@ -9192,34 +8996,37 @@ Lemma~\ref{lem:confidence-under-frozen-omegahat-final}, and where
 Assume Assumption~\ref{ass:exogenous-uniform-calibration-diversity-final} and
 the post-calibration routing assumptions of
 Assumption~\ref{assump:shared-structure-app}.  Let
-\begin{equation}
-\tau_m=\frac{2\sigma^2}{\kappa_{\rm cal}m},
-\qquad
-K_m^2=S_\Omega^2+\tau_m.
-\end{equation}
-For
-\(\delta_{\rm gram},\delta_{\rm cov},\delta_{\rm route}\in(0,1)\), suppose
-\begin{equation}
+\begin{align}
+\tau_m
+&\,=\,
+\frac{2\sigma^2}{\kappa_{\rm cal}m},
+&
+K_m^2
+&\,=\,
+S_\Omega^2+\tau_m,
+\\
 m
-\ge
+&\,\geq\,
 \frac{8L_{\rm cal}^2}{\kappa_{\rm cal}}
 \log\!\left(\frac{dN}{\delta_{\rm gram}}\right).
-\end{equation}
-Define
-\begin{equation}
+\end{align}
+Here
+\(\delta_{\rm gram},\delta_{\rm cov},\delta_{\rm route}\in(0,1)\). Define
+\begin{align}
 \varepsilon_*
-=
-C_{\rm cov}K_m^2
-\left[
+&\,=\,
+C_{\rm cov}K_m^2\left[
 \sqrt{\frac{d+\log(2/\delta_{\rm cov})}{N}}
 +
 \frac{d+\log(2/\delta_{\rm cov})}{N}
 \right]
+\notag\\
+&\quad
 +
 \tau_m
 +
 \gamma\|\Omega^{-1}\|_{\mathrm{op}}.
-\end{equation}
+\end{align}
 Computing this radius requires supplied deterministic bounds for
 \(S_\Omega,\sigma,\kappa_{\rm cal},L_{\rm cal},L_\Omega\), and
 \(\|\Omega^{-1}\|_{\rm op}\). Without them, the certificate is oracle-tuned.
@@ -9228,31 +9035,29 @@ post-calibration archive, and the latent parameter of every routing candidate.
 Assume the post-routing conditional sub-Gaussian
 bound holds after this sigma-field is added to the routing filtration, and
 assume \(\varepsilon_*<1\). Define
-\begin{equation}
+\begin{align}
 c_T^\Omega
-=
-1+\log\!\left(1+\frac{TL_\Omega^2}{\lambda}\right)
-\end{equation}
-and
-\begin{equation}
+&\,=\,
+1+\log\!\left(1+\frac{TL_\Omega^2}{\lambda}\right),
+&
 B_{T,0}^{\rm cal}
-=
+&\,=\,
 2\alpha_T
 \sqrt{
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
-\end{equation}
+\end{align}
 Then, with probability at least
 \(1-\delta_{\rm gram}-\delta_{\rm cov}\),
 \begin{equation}
 \rho_{\Omega,T}
-:=
+\,\coloneqq\,
 \max_{1\le t\le T}
 \left\|
 \Omega^{-1/2}(\widehat\Omega_t-\Omega)\Omega^{-1/2}
 \right\|_{\mathrm{op}}
-\le
+\,\leq\,
 \varepsilon_*.
 \end{equation}
 In particular, taking \(\delta_{\rm gram}=\delta_{\rm cov}=\delta/2\) gives the
@@ -9262,425 +9067,320 @@ With probability at least
 \(1-\delta_{\rm gram}-\delta_{\rm cov}-\delta_{\rm route}\),
 \begin{equation}
 \sum_{t=1}^T L_t(U)
-\le
+\,\leq\,
 \sqrt{1+\varepsilon_*}\,B_{T,0}^{\rm cal}.
 \end{equation}
-Define
-\begin{equation}
+Define the uncharged and charged remainder terms and record the resulting
+expectation bounds:
+\begin{align}
 \operatorname{Rem}_T^{\rm cal}
-=
+&\,=\,
 \left(\sqrt{1+\varepsilon_*}-1\right)B_{T,0}^{\rm cal}
 +
 (\delta_{\rm gram}+\delta_{\rm cov}+\delta_{\rm route})T.
-\end{equation}
-Then
-\begin{equation}
+\\
 \sum_{t=1}^T\mathbb{E}[L_t(U)]
-\le
+&\,\leq\,
 B_{T,0}^{\rm cal}
 +
 \operatorname{Rem}_T^{\rm cal}.
-\end{equation}
-If each of the \(Nm\) calibration pulls is assigned a worst-case unit
-opportunity-cost charge, define
-\begin{equation}
+\\
 \operatorname{Rem}_T^{\rm charged}
-=
+&\,=\,
 Nm+\operatorname{Rem}_T^{\rm cal}.
-\end{equation}
-The expected post-calibration exploration cost plus this calibration charge is
-at most
-\begin{equation}
+\\
+\sum_{t=1}^T\mathbb E[L_t(U)]+Nm
+&\,\leq\,
 B_{T,0}^{\rm cal}
 +
 \operatorname{Rem}_T^{\rm charged}.
-\end{equation}
-For fixed
-\begin{equation}
-d,\ K_{\max},\ S_\Omega,\ \sigma,\ \kappa_{\rm cal},\
-L_{\rm cal},\ L_\Omega,\ \lambda,\ \|\Omega^{-1}\|_{\mathrm{op}},
-\end{equation}
-and a uniformly bounded sequence
+\end{align}
+The last two rows assign each of the \(Nm\) calibration pulls a worst-case unit
+opportunity-cost charge. For fixed
+\(d,K_{\max},S_\Omega,\sigma,\kappa_{\rm cal},L_{\rm cal},L_\Omega,\lambda\),
+and \(\|\Omega^{-1}\|_{\mathrm{op}}\), and uniformly bounded
 \(\bar d_{\mathrm{eff},T}(\Omega)\), take
-\begin{equation}
-N=\lceil T^{1/5}\rceil,
-\qquad
-m=\lceil T^{1/5}\rceil,
-\qquad
-\gamma=T^{-1/5},
-\qquad
-\delta_{\rm gram}=\delta_{\rm cov}=\delta_{\rm route}=T^{-2}.
-\end{equation}
-Then, for all sufficiently large \(T\),
-\begin{equation}
-\varepsilon_*<1,
-\qquad
+\begin{align}
+N
+&\,=\,
+\lceil T^{1/5}\rceil,
+&
+m
+&\,=\,
+\lceil T^{1/5}\rceil,
+&
+\gamma
+&\,=\,
+T^{-1/5},
+\\
+\delta_{\rm gram}
+&\,=\,
+\delta_{\rm cov}
+\,=\,
+\delta_{\rm route}
+\,=\,
+T^{-2}.
+\end{align}
+For all sufficiently large \(T\), the resulting rates are
+\begin{align}
 \varepsilon_*
-=
+&\,<\,
+1,
+&
+\varepsilon_*
+&\,=\,
 O\!\left(T^{-1/10}\sqrt{\log T}\right).
-\end{equation}
-Moreover,
-\begin{equation}
-\alpha_T=O(\sqrt{d\log T}),
-\qquad
+\\
+\alpha_T
+&\,=\,
+O(\sqrt{d\log T}),
+&
 B_{T,0}^{\rm cal}
-=
+&\,=\,
 O\!\left(
 \sqrt{dK_{\max}\bar d_{\mathrm{eff},T}(\Omega)T}\,\log T
 \right),
-\end{equation}
-and
-\begin{equation}
+\\
 \operatorname{Rem}_T^{\rm cal}
-=
+&\,=\,
 O\!\left(T^{2/5}(\log T)^{3/2}\right)
-=
+\,=\,
 o(\sqrt{T}).
-\end{equation}
+\end{align}
 The same rate holds for
 \(\operatorname{Rem}_T^{\rm charged}\).
 \end{theorem}
 
 \begin{proof}
 Because \(\widehat\Omega_t=\widehat\Omega\) for every post-calibration routing
-round,
-\begin{equation}
-\rho_{\Omega,T}
-=
+round, Lemma~\ref{lem:relative-covariance-error-final} gives the event
+\begin{align}
+\mathcal{E}_{\rm cov}
+&\,\coloneqq\,
+\left\{
 \left\|
 \Omega^{-1/2}(\widehat\Omega-\Omega)\Omega^{-1/2}
-\right\|_{\mathrm{op}}.
-\end{equation}
-The high-probability covariance bound is exactly
-Lemma~\ref{lem:relative-covariance-error-final}.  Therefore, with probability
-at least \(1-\delta_{\rm gram}-\delta_{\rm cov}\),
-\begin{equation}
-\rho_{\Omega,T}\le\varepsilon_*.
-\end{equation}
-Assume now that \(\varepsilon_*<1\) and work on the covariance event
-\begin{equation}
-\mathcal{E}_{\rm cov}=\{\rho_{\Omega,T}\le\varepsilon_*\}.
-\end{equation}
-On this event,
+\right\|_{\mathrm{op}}
+\leq\varepsilon_*
+\right\},
+&
+\Pr(\mathcal E_{\rm cov})
+&\,\geq\,
+1-\delta_{\rm gram}-\delta_{\rm cov}.
+\end{align}
+On \(\mathcal E_{\rm cov}\), \(\rho_{\Omega,T}\leq\varepsilon_*\), and
 \begin{equation}
 (1-\varepsilon_*)\Omega
-\preceq
+\,\preceq\,
 \widehat\Omega
-\preceq
+\,\preceq\,
 (1+\varepsilon_*)\Omega.
 \end{equation}
 By Lemma~\ref{lem:confidence-under-frozen-omegahat-final}, conditional on
 \(\mathcal F_0^{\rm route}\), with probability at least
-\(1-\delta_{\rm route}\), the following simultaneous routing confidence event
-holds:
+\(1-\delta_{\rm route}\), the simultaneous routing confidence event
 \begin{equation}
+\mathcal E_{\rm route}
+\,\coloneqq\,
+\left\{
 \left|
 x^\top(\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a)
 \right|
-\le
+\,\leq\,
 \alpha_T
 \sqrt{x^\top(V_{a,t}^{\widehat\Omega})^{-1}x}
+\ \text{for all \(a,t,x\)}
+\right\}
 \end{equation}
-for every routing candidate \(a\), every \(t\le T\), and every predictable
-feature \(x\). The conditional probability statement integrates to an
-unconditional statement. A union bound gives an event \(\mathcal{E}\) of
-probability at least
-\begin{equation}
-1-\delta_{\rm gram}-\delta_{\rm cov}-\delta_{\rm route}
-\end{equation}
-on which both the covariance event and the routing confidence event hold.
+holds, where \(x\) ranges over predictable test features. Its conditional
+probability bound integrates to an unconditional one. Hence
+\(\mathcal E=\mathcal E_{\rm cov}\cap\mathcal E_{\rm route}\) satisfies
+\(\Pr(\mathcal E)\geq
+1-\delta_{\rm gram}-\delta_{\rm cov}-\delta_{\rm route}\).
 
-On \(\mathcal{E}\), fix a routing round \(t\).  Let
+On \(\mathcal E\), fix \(t\), let
+\(a_t^\star\in\arg\max_{a\in A_t(U)}x_t(a)^\top\theta_a\), and define the
+local confidence width
 \begin{equation}
-a_t^\star\in
-\operatorname*{arg\,max}_{a\in A_t(U)}
-x_t(a)^\top\theta_a
+w_{a,t}^{\widehat\Omega}
+\,\coloneqq\,
+\sqrt{x_t(a)^\top(V_{a,t}^{\widehat\Omega})^{-1}x_t(a)}.
 \end{equation}
-and let \(a_t\) be the action selected by the frozen estimated-covariance UCB
-rule.  The confidence event applied to \(a_t^\star\) gives
-\begin{equation}
+The confidence event and the UCB choice of \(a_t\) yield
+\begin{align}
 x_t(a_t^\star)^\top\theta_{a_t^\star}
-\le
-x_t(a_t^\star)^\top\widehat\theta_{a_t^\star,t}^{\widehat\Omega}
-+
-\alpha_T
-\sqrt{
+&\,\leq\,
 x_t(a_t^\star)^\top
-(V_{a_t^\star,t}^{\widehat\Omega})^{-1}
-x_t(a_t^\star)
-}.
-\end{equation}
-Since \(a_t\) maximizes the same UCB score,
-\begin{equation}
-\begin{aligned}
-&
-x_t(a_t^\star)^\top\widehat\theta_{a_t^\star,t}^{\widehat\Omega}
-+
-\alpha_T
-\sqrt{
-x_t(a_t^\star)^\top
-(V_{a_t^\star,t}^{\widehat\Omega})^{-1}
-x_t(a_t^\star)
-}
-\\
-&\le
+\widehat\theta_{a_t^\star,t}^{\widehat\Omega}
++\alpha_Tw_{a_t^\star,t}^{\widehat\Omega}
+\notag\\
+&\,\leq\,
 x_t(a_t)^\top\widehat\theta_{a_t,t}^{\widehat\Omega}
-+
-\alpha_T
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\widehat\Omega})^{-1}
-x_t(a_t)
-}.
-\end{aligned}
-\end{equation}
-The confidence event applied to \(a_t\) gives
-\begin{equation}
-x_t(a_t)^\top\widehat\theta_{a_t,t}^{\widehat\Omega}
-\le
++\alpha_Tw_{a_t,t}^{\widehat\Omega}
+\notag\\
+&\,\leq\,
 x_t(a_t)^\top\theta_{a_t}
-+
-\alpha_T
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\widehat\Omega})^{-1}
-x_t(a_t)
-}.
-\end{equation}
-Combining the last three inequalities yields
++2\alpha_Tw_{a_t,t}^{\widehat\Omega}.
+\end{align}
+Thus, because \(0\leq L_t(U)\leq1\) and \(\alpha_T\geq1\),
 \begin{equation}
 L_t(U)
-=
-x_t(a_t^\star)^\top\theta_{a_t^\star}
--
-x_t(a_t)^\top\theta_{a_t}
-\le
-2\alpha_T
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\widehat\Omega})^{-1}
-x_t(a_t)
-}.
+\,\leq\,
+2\alpha_T\min\{1,w_{a_t,t}^{\widehat\Omega}\}.
 \end{equation}
-Since \(0\le L_t(U)\le1\) and \(\alpha_T\ge1\),
-\begin{equation}
-L_t(U)
-\le
-2\alpha_T
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\widehat\Omega})^{-1}
-x_t(a_t)
-}
-\right\}.
-\end{equation}
-The covariance event implies
-\begin{equation}
-\widehat\Omega^{-1}\succeq \frac{1}{1+\varepsilon_*}\Omega^{-1}.
-\end{equation}
-Therefore
-\begin{equation}
-\begin{aligned}
+The covariance event gives
+\(\widehat\Omega^{-1}\succeq(1+\varepsilon_*)^{-1}\Omega^{-1}\). Therefore,
+\begin{align}
 V_{a,t}^{\widehat\Omega}
-&=
+&\,=\,
 X_{a,t}^\top X_{a,t}+\lambda\widehat\Omega^{-1}
 \\
-&\succeq
+&\,\succeq\,
 X_{a,t}^\top X_{a,t}
 +
 \frac{\lambda}{1+\varepsilon_*}\Omega^{-1}
 \\
-&\succeq
+&\,\succeq\,
 \frac{1}{1+\varepsilon_*}
 \left(
 X_{a,t}^\top X_{a,t}+\lambda\Omega^{-1}
 \right)
-=
+\,=\,
 \frac{1}{1+\varepsilon_*}V_{a,t}^{\Omega}.
-\end{aligned}
-\end{equation}
-Inverting gives
-\begin{equation}
+\\
 (V_{a,t}^{\widehat\Omega})^{-1}
-\preceq
+&\,\preceq\,
 (1+\varepsilon_*)(V_{a,t}^{\Omega})^{-1}.
-\end{equation}
-Consequently,
-\begin{equation}
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\widehat\Omega})^{-1}
-x_t(a_t)
-}
-\le
-\sqrt{1+\varepsilon_*}
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\Omega})^{-1}
-x_t(a_t)
-}.
-\end{equation}
-For \(c\ge1\) and \(z\ge0\),
-\begin{equation}
-\min\{1,cz\}\le c\min\{1,z\}.
-\end{equation}
-Applying this with \(c=\sqrt{1+\varepsilon_*}\) gives
+\\
+w_{a,t}^{\widehat\Omega}
+&\,\leq\,
+\sqrt{1+\varepsilon_*}\,
+w_{a,t}^{\Omega},
+\qquad
+w_{a,t}^{\Omega}
+\,\coloneqq\,
+\sqrt{x_t(a)^\top(V_{a,t}^{\Omega})^{-1}x_t(a)}.
+\end{align}
+Since \(\min\{1,cz\}\leq c\min\{1,z\}\) for \(c\geq1\) and \(z\geq0\),
 \begin{equation}
 L_t(U)
-\le
+\,\leq\,
 2\alpha_T\sqrt{1+\varepsilon_*}
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\Omega})^{-1}
-x_t(a_t)
-}
-\right\}.
+\min\{1,w_{a_t,t}^{\Omega}\}.
 \end{equation}
 Summing over \(t\), partitioning selected rounds by candidate, applying
 Cauchy--Schwarz, and then applying the already-proved
 \(\Omega\)-elliptical-potential lemma candidate by candidate yields
 \begin{equation}
-\sum_{t=1}^T
-\min\!\left\{
-1,
-\sqrt{
-x_t(a_t)^\top
-(V_{a_t,t}^{\Omega})^{-1}
-x_t(a_t)
-}
-\right\}
-\le
+\sum_{t=1}^T\min\{1,w_{a_t,t}^{\Omega}\}
+\,\leq\,
 \sqrt{
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
 \end{equation}
-Substituting this bound into the previous display proves the pathwise routing
-bound
-\begin{equation}
+Thus, on \(\mathcal E\),
+\begin{align}
 \sum_{t=1}^T L_t(U)
-\le
-\sqrt{1+\varepsilon_*}\,B_{T,0}^{\rm cal}.
-\end{equation}
-On \(\mathcal{E}\),
-\begin{equation}
-\sum_{t=1}^T L_t(U)
-\le
+&\,\leq\,
 \sqrt{1+\varepsilon_*}\,B_{T,0}^{\rm cal}
-=
+\\
+&\,=\,
 B_{T,0}^{\rm cal}
 +
 (\sqrt{1+\varepsilon_*}-1)B_{T,0}^{\rm cal}.
-\end{equation}
-On \(\mathcal{E}^c\), the deterministic bound \(0\le L_t(U)\le1\) gives
-\begin{equation}
-\sum_{t=1}^T L_t(U)\le T.
-\end{equation}
-Taking expectations yields
-\begin{equation}
+\end{align}
+On \(\mathcal E^c\), \(0\leq L_t(U)\leq1\) gives
+\(\sum_{t=1}^T L_t(U)\leq T\). Taking expectations therefore yields
+\begin{align}
 \sum_{t=1}^T\mathbb{E}[L_t(U)]
-\le
+&\,\leq\,
 B_{T,0}^{\rm cal}
 +
 (\sqrt{1+\varepsilon_*}-1)B_{T,0}^{\rm cal}
+\\
+&\quad
 +
 (\delta_{\rm gram}+\delta_{\rm cov}+\delta_{\rm route})T.
-\end{equation}
+\end{align}
 This is the stated bound with \(\operatorname{Rem}_T^{\rm cal}\). Under the
 declared unit opportunity-cost convention, the \(Nm\) calibration pulls add at
 most \(Nm\), giving \(\operatorname{Rem}_T^{\rm charged}\).
 
-It remains to verify the asymptotic schedule.  With fixed problem constants and
-\begin{equation}
-N=\lceil T^{1/5}\rceil,\qquad
-m=\lceil T^{1/5}\rceil,\qquad
-\gamma=T^{-1/5},\qquad
-\delta_{\rm gram}=\delta_{\rm cov}=\delta_{\rm route}=T^{-2},
-\end{equation}
-we have
-\begin{equation}
+It remains to verify the stated asymptotic schedule. With fixed problem
+constants,
+\begin{align}
 \sqrt{\frac{d+\log(2/\delta_{\rm cov})}{N}}
-=
+&\,=\,
 O\!\left(T^{-1/10}\sqrt{\log T}\right),
-\end{equation}
-\begin{equation}
+&
 \frac{d+\log(2/\delta_{\rm cov})}{N}
-=
+&\,=\,
 O(T^{-1/5}\log T),
-\end{equation}
-\begin{equation}
-\tau_m=O(T^{-1/5}),
-\qquad
-\gamma\|\Omega^{-1}\|_{\mathrm{op}}=O(T^{-1/5}).
-\end{equation}
-The dominant term is \(O(T^{-1/10}\sqrt{\log T})\), so
-\begin{equation}
+\\
+\tau_m
+&\,=\,
+O(T^{-1/5}),
+&
+\gamma\|\Omega^{-1}\|_{\mathrm{op}}
+&\,=\,
+O(T^{-1/5}),
+\\
 \varepsilon_*
-=
+&\,=\,
 O\!\left(T^{-1/10}\sqrt{\log T}\right).
-\end{equation}
+\end{align}
 Since \(T^{-1/10}\sqrt{\log T}\to0\), there exists \(T_0<\infty\) such that
 \(\varepsilon_*<1\) for all \(T\ge T_0\).  The Gram lower-tail condition also
 holds for all sufficiently large \(T\), because its right-hand side is
 \(O(\log T)\) whereas \(m=\lceil T^{1/5}\rceil\).
 
 The explicit radius in
-Lemma~\ref{lem:confidence-under-frozen-omegahat-final} then satisfies
-\begin{equation}
-\alpha_T=O(\sqrt{d\log T}).
-\end{equation}
-Since \(c_T^\Omega=O(\log T)\) and the effective-dimension cap is uniformly
-bounded,
-\begin{equation}
+Lemma~\ref{lem:confidence-under-frozen-omegahat-final}, the bound
+\(c_T^\Omega=O(\log T)\), and the uniformly bounded effective-dimension cap
+give
+\begin{align}
+\alpha_T
+&\,=\,
+O(\sqrt{d\log T}),
+\\
 B_{T,0}^{\rm cal}
-=
+&\,=\,
 O\!\left(
 \sqrt{dK_{\max}\bar d_{\mathrm{eff},T}(\Omega)T}\,\log T
 \right).
-\end{equation}
-For \(0\le\varepsilon_*\le1\),
-\begin{equation}
+\\
 \sqrt{1+\varepsilon_*}-1
-=
+&\,=\,
 \frac{\varepsilon_*}{\sqrt{1+\varepsilon_*}+1}
-\le
+\,\leq\,
 \varepsilon_*.
-\end{equation}
-Therefore
-\begin{equation}
+\\
 (\sqrt{1+\varepsilon_*}-1)B_{T,0}^{\rm cal}
-=
+&\,=\,
 O\!\left(T^{-1/10}\sqrt{\log T}\right)
 O(\sqrt{T}\log T)
-=
+\,=\,
 O\!\left(T^{2/5}(\log T)^{3/2}\right).
-\end{equation}
-Also,
-\begin{equation}
-Nm=O(T^{2/5}),
-\end{equation}
-and
-\begin{equation}
+\\
+Nm
+&\,=\,
+O(T^{2/5}),
+\\
 (\delta_{\rm gram}+\delta_{\rm cov}+\delta_{\rm route})T
-=
+&\,=\,
 3T^{-1}.
-\end{equation}
-Hence
-\begin{equation}
+\\
 \operatorname{Rem}_T^{\rm charged}
-=
+&\,=\,
 O(T^{2/5})
 +
 O\!\left(T^{2/5}(\log T)^{3/2}\right)
 +
 O(T^{-1})
-=
+\,=\,
 o(\sqrt T),
-\end{equation}
+\end{align}
 because
 \(T^{-1/10}(\log T)^{3/2}\to0\). The uncharged remainder is no larger.
 \end{proof}
