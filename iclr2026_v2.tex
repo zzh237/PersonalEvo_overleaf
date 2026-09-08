@@ -593,27 +593,30 @@ The proof is in Appendix~\ref{app:proofs}.
 \begin{theorem}[Exact decomposition on the common initial archive]
 \label{thm:decomp}
 Let $A_1$ be deterministic, finite, and shared by all users. For every round $t$ and every horizon $T \ge 1$,
-\begin{align}
+\begin{equation}
+\label{eq:thm-decomp-pointwise}
 \E[\mu(U, a_t(U))]
-&\,=\, V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1) + \E[G_t(U)] - \E[L_t(U)],
-\label{eq:thm-decomp-pointwise}\\
-\frac{1}{T}\sum_{t=1}^T \E[\mu(U, a_t(U))]
-&\,=\, V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1) + \bar G_T - \bar L_T.
+\,=\, V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1) + \E[G_t(U)] - \E[L_t(U)].
+\end{equation}
+\begin{equation}
 \label{eq:thm-decomp-avg}
-\end{align}
+\frac{1}{T}\sum_{t=1}^T \E[\mu(U, a_t(U))]
+\,=\, V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1) + \bar G_T - \bar L_T.
+\end{equation}
 \end{theorem}
 
 \begin{proof}[Proof sketch (full proof in Appendix~\ref{app:proofs})]
 By definition,
-\begin{align*}
-\mu(U, a_t(U)) &\,=\, m_t(U) - L_t(U), \\
-m_t(U) &\,=\, m_1(U) + G_t(U).
-\end{align*}
-Combining and taking expectations over all model and online randomness,
-\begin{align*}
-\E[\mu(U, a_t(U))] &\,=\, \E[m_1(U)] + \E[G_t(U)] - \E[L_t(U)].
-\end{align*}
-Lemma~\ref{lem:hetero} on $A_1$ gives $\E[m_1(U)] = V_{\mathrm{route}}(A_1) = V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1)$, which is \eqref{eq:thm-decomp-pointwise}. Averaging over $t$ yields \eqref{eq:thm-decomp-avg}.
+\begin{equation*}
+\begin{aligned}
+\mu(U,a_t(U))
+&\,=\,m_t(U)-L_t(U)\\
+&\,=\,m_1(U)+G_t(U)-L_t(U).
+\end{aligned}
+\end{equation*}
+Taking expectations over all model and online randomness and using
+Lemma~\ref{lem:hetero} gives \eqref{eq:thm-decomp-pointwise}. Averaging over
+$t$ gives \eqref{eq:thm-decomp-avg}.
 \end{proof}
 
 Theorem~\ref{thm:decomp} says that the reward achieved by the personalized routing policy decomposes into a structural piece on the initial archive ($V_{\mathrm{static}}+\Delta_{\mathrm{route}}$), an online discovery piece ($\bar G_T$), and a negative online learning piece ($-\bar L_T$).
@@ -776,12 +779,9 @@ Section~\ref{sec:experiments} reports the first three terms in
 
 \label{sec:theory}
 
-We now turn to the new result. The four-term decomposition remains unchanged:
-
-\begin{equation}
-R_T = \Rstatic(A_1) + \Droute(A_1) + \bar{G}_T - \bar{L}_T .
-\end{equation}
-The new method changes only the certificate for $\bar L_T$. The valid
+We now turn to the new result. Hyper-Ridge leaves the four-term decomposition
+in \eqref{eq:thm-decomp-avg} unchanged and changes only the certificate for
+$\bar L_T$. The valid
 comparison is between two complete finite-time budgets. Each budget contains a
 confidence radius and an elliptical-potential term. Hyper-Ridge can reduce the
 second term, but a small effective dimension does not by itself imply a smaller
@@ -804,35 +804,13 @@ in Algorithm~\ref{alg:hyper-ridge}, reduces exploration.
 
 
 
-We inherit the accounting identity from the Background section unchanged: Hyper-Ridge PersonalEvo changes only the statistical control of the exploration term, not the four-term decomposition itself. The average routed value is
-\begin{equation}
-\label{eq:hyper-routed-value}
-R_T^{\mathrm{hyper}}
-=
-\frac{1}{T}\sum_{t=1}^{T}
-\mathbb{E}\!\left[\mu(U,a_t(U))\right].
-\end{equation}
-By the decomposition in Section~\ref{sec:background}, the same quantity satisfies
-\begin{equation}
-\label{eq:hyper-inherited-decomp}
-R_T^{\mathrm{hyper}}
-=
-V_{\mathrm{static}}(A_1)
-+
-\Delta_{\mathrm{route}}(A_1)
-+
-\bar G_T
--
-\bar L_T.
-\end{equation}
-Thus the only theoretical change in this section is the replacement of the ordinary dimension-dependent control of
-\begin{equation}
-\label{eq:hyper-barl}
-\bar L_T
-=
-\frac{1}{T}\sum_{t=1}^{T}\mathbb{E}[L_t(U)]
-\end{equation}
-by an archive-geometry-dependent control.
+Write
+\(R_T^{\mathrm{hyper}}
+=T^{-1}\sum_{t=1}^{T}\mathbb{E}[\mu(U,a_t(U))]\).
+Equation~\eqref{eq:thm-decomp-avg} applies directly. This section replaces the
+ordinary dimension-dependent control of
+\(\bar L_T=T^{-1}\sum_{t=1}^{T}\mathbb{E}[L_t(U)]\)
+with an archive-geometry-dependent control.
 
 The routing rule analyzed below is the implementation target for the hyper-ridge revision. For candidate \(a\), the generalized design matrix is
 \begin{equation}
@@ -1027,19 +1005,20 @@ B_{T,0}^{\mathrm{cal}}
 \operatorname{Rem}_T^{\mathrm{cal}}.
 \end{equation}
 Moreover,
-\begin{align}
+\begin{equation}
+\label{eq:hyper-open-rates}
+\begin{aligned}
 B_{T,0}^{\mathrm{cal}}
 &=
 O\!\left(
 \sqrt{dK_{\max}\bar d_{\mathrm{eff},T}(\Omega)T}\,\log T
-\right),
-\label{eq:hyper-open-leading}\\
+\right),\\
 \operatorname{Rem}_T^{\mathrm{cal}}
 &=
 O\!\left(T^{2/5}(\log T)^{3/2}\right)
 =o(\sqrt T).
-\label{eq:hyper-open-remainder}
-\end{align}
+\end{aligned}
+\end{equation}
 This is a theorem for a fixed post-calibration archive. It is not a theorem for the periodic estimator.
 The leading term in \eqref{eq:hyper-open-err} is not the oracle budget: its
 confidence radius already depends on the covariance-error bound. The displayed
@@ -1047,21 +1026,8 @@ remainder isolates only the additional width inflation, failure probability,
 and, when charged, calibration pulls.
 \end{remark}
 
-As a concrete scale calculation, suppose
-\begin{equation}
-\label{eq:hyper-example-k}
-K_{\max}=16.
-\end{equation}
-Suppose the ambient feature dimension is
-\begin{equation}
-\label{eq:hyper-example-d}
-d=100.
-\end{equation}
-Suppose the deterministic effective-dimension cap is
-\begin{equation}
-\label{eq:hyper-example-deff}
-\bar d_{\mathrm{eff},T}(\Omega)=9.
-\end{equation}
+As a concrete scale calculation, take \(K_{\max}=16\), \(d=100\), and
+\(\bar d_{\mathrm{eff},T}(\Omega)=9\).
 If the two confidence radii and logarithmic potential factors are equal, the width-sum part changes by the ratio
 \begin{equation}
 \label{eq:hyper-example-ratio}
@@ -1134,7 +1100,9 @@ B_T^{\mathrm{LinUCB}}.
 
 \begin{proof}
 Substituting Proposition~\ref{prop:deff-bound} into the inherited decomposition gives
-\begin{align}
+\begin{equation}
+\label{eq:hyper-cor-proof}
+\begin{aligned}
 R_T^{\mathrm{hyper}}
 &=
 V_{\mathrm{static}}(A_1)
@@ -1144,15 +1112,15 @@ V_{\mathrm{static}}(A_1)
 \bar G_T
 -
 \bar L_T
-\nonumber\\
+\\
 &\ge
 V_{\mathrm{static}}(A_1)
 +
 M_T
 -
 \frac{B_T^{\mathrm{hyper}}}{T}.
-\label{eq:hyper-cor-proof}
-\end{align}
+\end{aligned}
+\end{equation}
 Condition \eqref{eq:hyper-dom-condition} implies \eqref{eq:hyper-dom-reward}. The interval claim follows by comparing \eqref{eq:hyper-budget} and \eqref{eq:hyper-linucb-budget}.
 \end{proof}
 
@@ -1383,64 +1351,19 @@ The repository implements both the base router and the periodic Hyper-Ridge esti
 
 \label{sec:conclusion}
 
-This paper revised the PersonalEvo framework around a single idea: a self-evolving agent should meta-learn the geometry of its own archive. The base framework answers \emph{whether} personalized routing pays off through the exact four-term decomposition
-\begin{equation}
-\label{eq:conc-decomp}
-\frac{1}{T}\sum_{t=1}^{T}\E\bigl[\mu(U,a_t(U))\bigr]
-\;=\;
-V_{\mathrm{static}}(A_1)
-+ \Delta_{\mathrm{route}}(A_1)
-+ \bar G_T
-- \bar L_T,
-\end{equation}
-and the associated dominance condition
-\begin{equation}
-\label{eq:conc-dom}
-\Delta_{\mathrm{route}}(A_1) + \bar G_T \;>\; \bar L_T,
-\end{equation}
-both of which are inherited unchanged from the base paper
-(Theorem~\ref{thm:decomp}, Corollary~\ref{cor:dominance}). The revision leaves
-the first three terms untouched and attacks the only negative term. For the
-theoretical LinUCB router, with \(T\ge2\), \(K_{\max}\), \(d\), and the other
-problem parameters fixed and \(\delta=1/T\),
-\begin{equation}
-\label{eq:conc-base-rate}
-\sum_{t=1}^{T}\E[L_t(U)]
-\;=\;
-O\!\left(\sqrt{T}\log T\right).
-\end{equation}
-Hyper-Ridge models candidate parameters with a shared geometry,
-\begin{equation}
-\label{eq:conc-random-effects}
-\theta_a \sim (0,\Omega), \qquad \Omega \in \mathbb{R}^{d\times d},
-\end{equation}
-and uses that geometry in the generalized-ridge UCB score. For a design \(X\),
-the effective dimension is
-\begin{equation}
-\label{eq:conc-deff}
-d_{\mathrm{eff}}(\Omega;X)
-\;=\;
-\operatorname{tr}\!\left[
-X^\top X \left(X^\top X + \lambda \Omega^{-1}\right)^{-1}
-\right].
-\end{equation}
-For known \(\Omega\), Proposition~\ref{prop:deff-bound} gives
-\begin{equation}
-\label{eq:conc-hyper-rate}
-\sum_{t=1}^{T}\E[L_t(U)]
-\;\le\;
-2\alpha_{\Omega,T}(\delta)
-\sqrt{
-2K_{\max}T\,c_T^\Omega
-\bar d_{\mathrm{eff},T}(\Omega)}
-+\delta T.
-\end{equation}
-For \(T\ge2\), fixed problem parameters, and \(\delta=1/T\), this bound is
-\(O(\sqrt{T}\log T)\). A small effective dimension helps only when the full
-Hyper-Ridge budget is below the LinUCB budget. The calibration-split theorem
-proves a separate frozen-estimate bound. Its estimated-geometry radius remains
-inside the leading term, while its explicit width-inflation and calibration
-remainder is \(o(\sqrt T)\). It does not cover periodic re-estimation.
+This paper revised PersonalEvo around one idea: a self-evolving agent should
+learn the geometry of its own archive. Theorem~\ref{thm:decomp} and
+Corollary~\ref{cor:dominance} determine when personalized routing pays off.
+Hyper-Ridge leaves the structural and discovery terms unchanged and targets
+the exploration cost. It models candidate parameters with a shared geometry
+\(\Omega\) and uses the effective dimension in \eqref{eq:hyper-deff}.
+For known \(\Omega\), Proposition~\ref{prop:deff-bound} gives the complete
+bound in \eqref{eq:hyper-deff-bound-expect-main}. For \(T\ge2\), fixed problem
+parameters, and \(\delta=1/T\), both the LinUCB and known-geometry bounds are
+\(O(\sqrt{T}\log T)\). Geometry helps only when the complete Hyper-Ridge budget
+is smaller. The calibration-split theorem gives a separate frozen-estimate
+bound whose explicit width-inflation and calibration remainder is
+\(o(\sqrt T)\); it does not cover periodic re-estimation.
 
 Two provenance facts bound what this paper claims. First, the nine-benchmark estimates, ablation hierarchy, per-round traces, and baseline comparison in Section~\ref{sec:experiments} belong to the \emph{base} LinUCB router. Their logged margins are
 \begin{equation}
@@ -1450,14 +1373,14 @@ Two provenance facts bound what this paper claims. First, the nine-benchmark est
 \end{equation}
 across all nine benchmarks, where
 \(\bar L_T^{\mathrm{obs}}=T^{-1}\sum_t(m_t-r_t)\). This equality is logged
-accounting, not validation of \eqref{eq:conc-decomp}: clipping means that
+accounting, not validation of \eqref{eq:thm-decomp-avg}: clipping means that
 \(\mathbb E[r_t\mid\mathcal F_{t-1}]\) need not equal the pre-clipping
 \(\mu(U,a_t)\) used by the structural terms. The selected-arm mean must be
 logged to evaluate \(\bar L_T\) itself. The separate Hyper-Ridge suite is
 diagnostic: known geometry helps on planted low-rank problems, but periodic
 estimation does not recover that benefit, and one-hot adapters collapse the
 full covariance to a diagonal one. Second, the effective-dimension guarantee
-\eqref{eq:conc-hyper-rate} is a theorem for the oracle-covariance router.
+\eqref{eq:hyper-deff-bound-expect-main} is a theorem for the oracle-covariance router.
 Appendix~\ref{app:err-control-proof} controls an estimated covariance for a
 calibration-split procedure under explicit diversity conditions, but this
 result does not cover the periodically updated estimator in
@@ -1465,17 +1388,13 @@ Algorithm~\ref{alg:hyper-ridge}. Controlling that fully adaptive estimator
 remains the primary theoretical open problem.
 
 The corresponding empirical open problem is the complete comparison specified in Section~\ref{sec:exp-hyper-ridge-plan}: base LinUCB versus known-covariance, calibration-split, periodically estimated, and diagonal-ridge routers on the same nine benchmarks, with the mean-reward exploration cost $\widehat L_T^\mu$ as the primary endpoint and $\widehat L_T^{\mathrm{obs}}$ reported separately. The feature map must admit shared directions; otherwise the full model is diagonal by construction. The comparison should also report covariance error, the fitted regret exponent, and a per-benchmark estimate of $d_{\mathrm{eff}}(\widehat\Omega;X)$ to locate both sides of the boundary: regimes where
-\begin{equation}
-\label{eq:conc-regime}
-d_{\mathrm{eff}}(\Omega;X) \ll d
-\end{equation}
-and the geometric potential can be smaller, and near-isotropic regimes where
-$d_{\mathrm{eff}}(\Omega;X)\approx d$. In both cases, the full confidence
+$d_{\mathrm{eff}}(\Omega;X)\ll d$ and the geometric potential can be smaller,
+and near-isotropic regimes where $d_{\mathrm{eff}}(\Omega;X)\approx d$. In both cases, the full confidence
 budget determines the comparison. The current implementation supplies the
 periodic estimator and common harness; a calibration-split implementation and
 a shared feature representation remain to be added.
 
-Beyond the two named gaps, the limitations of the base framework carry over. The reflective proposer in the simulated environments is oracle-assisted, so the measured evolution gain $\bar G_T$ does not estimate what a realistic LLM-driven proposer would deliver, and each user maintains a private archive, so discoveries are not shared across users. A shared archive could provide more data for estimating \(\Omega\), but it would change the predictability argument in Lemma~\ref{lem:predictable}; we leave that setting open. The decomposition \eqref{eq:conc-decomp} also applies to model routing, prompt selection, and tool-use policies whenever a system must choose from a candidate library.
+Beyond the two named gaps, the limitations of the base framework carry over. The reflective proposer in the simulated environments is oracle-assisted, so the measured evolution gain $\bar G_T$ does not estimate what a realistic LLM-driven proposer would deliver, and each user maintains a private archive, so discoveries are not shared across users. A shared archive could provide more data for estimating \(\Omega\), but it would change the predictability argument in Lemma~\ref{lem:predictable}; we leave that setting open. The decomposition \eqref{eq:thm-decomp-avg} also applies to model routing, prompt selection, and tool-use policies whenever a system must choose from a candidate library.
 
 \appendix
 
@@ -1534,11 +1453,13 @@ respect to the past: \(\sigma(A_t(U))\subseteq\mathcal F_{t-1}\).
 \begin{assumption}[A5: centered conditionally sub-Gaussian noise]
 \label{ass:app-noise}
 For every \(\lambda\in\mathbb R\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb E[\xi_t\mid\mathcal F_{t-1}] &\,=\,0, &
 \mathbb E\!\left[e^{\lambda\xi_t}\mid\mathcal F_{t-1}\right]
 &\,\leq\,\exp\!\left(\frac{\lambda^2\sigma^2}{2}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 \end{assumption}
 
 \begin{assumption}[A6: bounded features]
@@ -1550,16 +1471,19 @@ Every available candidate satisfies \(\|x_t(a)\|_2\leq L\).
 
 For a deterministic finite archive \(A\), define its static value, routed
 value, and heterogeneity gain by
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{\mathrm{static}}(A)
 &\,=\,\max_{a\in A}\mathbb E[\mu(U,a)], &
 V_{\mathrm{route}}(A)
 &\,=\,\mathbb E\!\left[\max_{a\in A}\mu(U,a)\right], \\
 \Delta_{\mathrm{route}}(A)
 &\,=\,V_{\mathrm{route}}(A)-V_{\mathrm{static}}(A).
-\end{align}
+\end{aligned}
+\end{equation}
 For the online archive, define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 m_t(U)
 &\,=\,\max_{a\in A_t(U)}\mu(U,a), &
 G_t(U)
@@ -1570,7 +1494,8 @@ L_t(U)
 &\,=\,\frac1T\sum_{t=1}^T\mathbb E[G_t(U)], &
 \bar L_T
 &\,=\,\frac1T\sum_{t=1}^T\mathbb E[L_t(U)].
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{proposition}[Integrability and signs of the accounting terms]
 \label{prop:1}
@@ -1587,14 +1512,16 @@ m_t(U),G_t(U),L_t(U)\in[0,1],
 Bounded rewards give \(0\leq m_t(U)\leq1\).  Since
 \(a_t(U)\in A_t(U)\), and since append-only growth gives
 \(A_1\subseteq A_t(U)\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 0
 &\,\leq\,m_t(U)-\mu(U,a_t(U))
       \,=\,L_t(U)\,\leq\,1, \\
 0
 &\,\leq\,m_t(U)-m_1(U)
       \,=\,G_t(U)\,\leq\,1.
-\end{align}
+\end{aligned}
+\end{equation}
 The integrability bound follows by summing these three pointwise bounds.
 \end{proof}
 
@@ -1631,12 +1558,14 @@ positive probability:
 Because \(A\) is finite, choose
 \(a^\star\in\operatorname*{arg\,max}_{a\in A}
 \mathbb E[\mu(U,a)]\).  Pointwise maximality gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \Delta_{\mathrm{route}}(A)
 &\,=\,\mathbb E\!\left[
   \max_{a\in A}\mu(U,a)-\mu(U,a^\star)\right]
 \,\geq\,0.
-\end{align}
+\end{aligned}
+\end{equation}
 The integrand is nonnegative, so its expectation is zero exactly when it is
 zero almost surely.  This proves the equality condition.  Conversely, an
 almost-surely pointwise-optimal candidate attains both
@@ -1679,14 +1608,16 @@ V_{\mathrm{static}}(A_1)
 \mathbb{E}[L_t(U)].
 \end{equation}
 Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 R_T
 &\,=\,\frac1T\sum_{t=1}^T\mathbb E[\mu(U,a_t(U))], &
 \bar G_T
 &\,=\,\frac1T\sum_{t=1}^T\mathbb E[G_t(U)], &
 \bar L_T
 &\,=\,\frac1T\sum_{t=1}^T\mathbb E[L_t(U)].
-\end{align}
+\end{aligned}
+\end{equation}
 Then
 \begin{equation}
 \label{eq:app-decomp-bound}
@@ -1705,7 +1636,8 @@ V_{\mathrm{static}}(A_1)
 \begin{proof}
 Proposition~\ref{prop:1} ensures integrability.  Taking expectations in
 Lemma~\ref{lem:2} gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[\mu(U,a_t(U))]
 &\,=\,
   \mathbb E[m_1(U)]+\mathbb E[G_t(U)]-\mathbb E[L_t(U)] \\
@@ -1719,20 +1651,23 @@ V_{\mathrm{static}}(A_1)
 \mathbb E[G_t(U)]
 -
 \mathbb E[L_t(U)].
-\end{align}
+\end{aligned}
+\end{equation}
 Summing over \(t\) and dividing by \(T\) proves
 \eqref{eq:app-decomp-bound}.
 \end{proof}
 
 The theorem concerns mean rewards.  Under Assumption~\ref{ass:app-noise}, the
 same expectation governs unclipped observed rewards because
-\begin{align}
+\begin{equation}
 \label{eq:app-observed-mean-link}
+\begin{aligned}
 \mathbb{E}[r_t]
 &\,=\,\mathbb E[\mu(U,a_t(U))]+\mathbb E[\xi_t] \\
 &\,=\,
 \mathbb{E}[\mu(U,a_t(U))].
-\end{align}
+\end{aligned}
+\end{equation}
 
 This link does not apply to the saved simulator's clipped observations in
 \eqref{eq:exp-clipped-reward} when \(\mu\) denotes the pre-clipping mean.
@@ -1745,8 +1680,9 @@ V_{\mathrm{static}}(A_1)=0.570,\quad
 \bar L_T^{\mathrm{obs}}=0.036.
 \end{equation}
 Therefore,
-\begin{align}
+\begin{equation}
 \label{eq:app-numeric-closure}
+\begin{aligned}
 V_{\mathrm{static}}(A_1)
 +
 \Delta_{\mathrm{route}}(A_1)
@@ -1759,7 +1695,8 @@ V_{\mathrm{static}}(A_1)
 \\
 &\,=\,
 0.865,
-\end{align}
+\end{aligned}
+\end{equation}
 
 which matches the reported observed routed value \(0.864\) up to table
 rounding. Because \(\bar L_T^{\mathrm{obs}}\) is defined from the same routed
@@ -1806,22 +1743,26 @@ slots \(k\leq K_{\max}\), with stopping-time birth \(\tau_k\) and
 \(a^{(k)}\) and its feature rule are
 \(\mathcal H_{\tau_k-1}\)-measurable.  Define the padded feature and selection
 indicator
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widetilde x_{t,k}
 &\,=\,\mathbf 1\{\tau_k\leq t\}\psi(U,a^{(k)}), &
 I_{t,k}
 &\,=\,\mathbf 1\{\tau_k\leq t,\ a_t(U)=a^{(k)}\}.
-\end{align}
+\end{aligned}
+\end{equation}
 Assume both are \(\mathcal H_{t-1}\)-measurable: they are zero before birth,
 and the slot identity is in the pre-action history afterward.  Also assume
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb E[\xi_t\mid\mathcal H_{t-1}]
 &\,=\,0, &
 \mathbb{E}\!\left[\exp(s\xi_t)\mid \mathcal{H}_{t-1}\right]
 &\,\leq\,
 \exp\!\left(\frac{s^2\sigma^2}{2}\right)
 \quad\text{for all }s\in\mathbb R.
-\end{align}
+\end{aligned}
+\end{equation}
 Then, for each deterministic slot \(k\),
 \begin{equation}
 Z_{t,k}=I_{t,k}\widetilde x_{t,k}\xi_t,
@@ -1834,15 +1775,18 @@ defines a vector-valued martingale with respect to the post-round filtration.
 \begin{proof}
 Fix \(k\).  Since \(I_{t,k}\widetilde x_{t,k}\) is
 \(\mathcal H_{t-1}\)-measurable,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[Z_{t,k}\mid \mathcal{H}_{t-1}]
 &\,=\,
 I_{t,k}\widetilde x_{t,k}\,
 \mathbb{E}[\xi_t\mid \mathcal{H}_{t-1}]
 \,=\,0.
-\end{align}
+\end{aligned}
+\end{equation}
 Moreover, for any direction \(v\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}\!\left[
 \exp\!\left(s\,v^\top Z_{t,k}\right)
 \mid
@@ -1854,7 +1798,8 @@ Moreover, for any direction \(v\),
 I_{t,k}
 (v^\top\widetilde x_{t,k})^2
 \right).
-\end{align}
+\end{aligned}
+\end{equation}
 Thus the increments are conditionally mean-zero (and sub-Gaussian in every
 predictable direction), so their partial sums form the claimed martingale.
 \end{proof}
@@ -1883,7 +1828,8 @@ Then
 Because \(a_t(U)\in A_t(U)\) and rewards lie in \([0,1]\),
 \(0\leq L_t(U)\leq1\), hence \(0\leq S_T^L\leq T\).  For
 \(\mathcal E_T^L=\{S_T^L\leq\widetilde B_T\}\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[S_T^{L}]
 &\,=\,
 \mathbb{E}[S_T^{L}\mathbf{1}\{\mathcal{E}_T^{L}\}]
@@ -1899,7 +1845,8 @@ T\,\mathbb{P}((\mathcal{E}_T^{L})^c)
 \widetilde{B}_T
 +
 T\delta.
-\end{align}
+\end{aligned}
+\end{equation}
 Linearity of expectation completes the proof.
 \end{proof}
 
@@ -1930,7 +1877,8 @@ x_t(a)=\psi(U,a)\in\mathbb R^d,\qquad
 Let \(r_t=\mu(U,a_t(U))+\xi_t\), where the centered sub-Gaussian conditions of
 Lemma~\ref{lem:3} also hold conditionally on \(\mathcal G_{t-1}\).  For
 \(\lambda\geq L_x^2>0\), define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{t,a}
 &\,=\,
 \lambda I_d
@@ -1942,7 +1890,8 @@ V_{t,a}
 V_{t,a}^{-1}
 \sum_{s=1}^{t-1}
 \mathbf{1}\{a_s(U)=a\}\,x_s(a)r_s.
-\end{align}
+\end{aligned}
+\end{equation}
 For \(\delta\in(0,1)\), let
 \begin{equation}
 \beta_T(\delta)
@@ -2004,7 +1953,8 @@ with zero summands before \(\tau_k\).  Conditional on the slot's birth history,
 the noise and measurability assumptions make this a vector-valued martingale
 in the analysis filtration.  The
 self-normalized martingale inequality gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}\!\left(
 \exists t\leq T:
 \|M_{t,k}\|_{V_{t,a^{(k)}}^{-1}}
@@ -2018,9 +1968,11 @@ self-normalized martingale inequality gives
 \right)
 &\,\leq\,
 \frac{\delta}{K_{\max}}.
-\end{align}
+\end{aligned}
+\end{equation}
 The trace bound gives, uniformly in \(t\leq T\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \log\!\left(\frac{\det V_{t,a^{(k)}}}{\det(\lambda I_d)}\right)
 &\,\leq\,
 d\log\!\left(
@@ -2034,7 +1986,8 @@ d\log\!\left(
 d\log\!\left(
 1+\frac{T L_x^2}{\lambda d}
 \right).
-\end{align}
+\end{aligned}
+\end{equation}
 Union-bounding over the deterministic slots yields, with probability at least
 \(1-\delta\),
 \begin{equation}
@@ -2056,7 +2009,8 @@ a_t^\star
 \operatorname*{arg\,max}_{a\in A_t(U)}\mu(U,a).
 \end{equation}
 Confidence, the UCB choice, and confidence again give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mu(U,a_t^\star)
 &\,\leq\,
 \widehat{\mu}_t(a_t^\star)
@@ -2072,11 +2026,13 @@ Confidence, the UCB choice, and confidence again give
 \mu(U,a_t)
 +
 2\beta_T(\delta)z_t(a_t).
-\end{align}
+\end{aligned}
+\end{equation}
 Thus \(L_t(U)\leq2\beta_T(\delta)z_t(a_t)\).  Also
 \(z_t(a_t)^2\leq\|x_t(a_t)\|_2^2/\lambda\leq1\).  The determinant recursion
 for each arm and a sum over at most \(K_{\max}\) arms give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sum_{t=1}^{T}
 \mathbf{1}\{a_t=a\}z_t(a)^2
 &\,\leq\,
@@ -2091,9 +2047,11 @@ for each arm and a sum over at most \(K_{\max}\) arms give
 &\,\leq\,
 2K_{\max}d
 \log\!\left(1+\frac{T L_x^2}{\lambda d}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 Combining this with Cauchy--Schwarz yields
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sum_{t=1}^{T}L_t(U)
 &\,\leq\,
 2\beta_T(\delta)
@@ -2108,7 +2066,8 @@ Combining this with Cauchy--Schwarz yields
 \\
 &\,=\,
 B_T^{\mathrm{lin}}(\delta).
-\end{align}
+\end{aligned}
+\end{equation}
 Lemma~\ref{lem:4} gives the expected bound.
 \end{proof}
 
@@ -2194,7 +2153,8 @@ O\!\left(\frac{\log T}{\sqrt T}\right)
 Apply Theorem~\ref{thm:convergence} with
 \(B_T=B_T^{\mathrm{lin}}(\delta)+T\delta\).  For \(T\geq2\) and
 \(\delta=1/T\), the definition of \(B_T^{\mathrm{lin}}\) gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \frac{B_T^{\mathrm{lin}}(1/T)+1}{T}
 &\,=\,
 \frac{
@@ -2208,7 +2168,8 @@ Apply Theorem~\ref{thm:convergence} with
 \\
 &\,=\,
 O\!\left(\frac{\log T}{\sqrt T}\right),
-\end{align}
+\end{aligned}
+\end{equation}
 under fixed problem parameters.
 \end{proof}
 
@@ -2217,7 +2178,8 @@ environment gave \(B_T/T=0.050\).  Table~\ref{tab:main} reports
 \(V_{\mathrm{static}}(A_1)=0.577\),
 \(\Delta_{\mathrm{route}}(A_1)=0.124\), and \(\bar G_T=0.041\).  The plug-in
 bound would then be
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{\mathrm{static}}(A_1)
 +
 \Delta_{\mathrm{route}}(A_1)
@@ -2230,7 +2192,8 @@ V_{\mathrm{static}}(A_1)
 \\
 &\,=\,
 0.692.
-\end{align}
+\end{aligned}
+\end{equation}
 This exceeds the static comparator by \(0.115\).  The empirical exploration
 cost in Section~\ref{sec:experiments} is diagnostic, not a certificate; using
 it only as a scale check gives
@@ -2265,12 +2228,14 @@ repair attempt, with \(\tau_{g,j}=\infty\) if it never occurs.  The objects
 below are defined on \(\{\tau_{g,j}<\infty\}\); any result invoking the first
 \(m\) attempts assumes they occur almost surely.  Let \(\mathcal H_{g,j}\)
 denote the information available immediately before drawing the child, and set
-\begin{align}
+\begin{equation}
+\begin{aligned}
 A_{g,j}^{-}
 &\,=\,A_{\tau_{g,j}}(U_g), &
 A_{g,j}^{+}
 &\,=\,A_{\tau_{g,j}+1}(U_g).
-\end{align}
+\end{aligned}
+\end{equation}
 Define the success indicator
 \begin{equation}
 I_{g,j}^{(\epsilon)}
@@ -2330,21 +2295,24 @@ I_{g,j}^{(\epsilon)}
 \end{equation}
 If Assumption~\ref{assump:app-repair} holds for the first \(m\) active
 attempts, then
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}\!\left(
 F_{g,m}^{(\epsilon)}
 \right)
 &\,\leq\,(1-q_{\epsilon})^m, &
 \mathbb{P}\!\left(S_{g,m}^{(\epsilon)}\right)
 &\,\geq\,1-(1-q_{\epsilon})^m.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{theorem}
 
 \begin{proof}
 Set \(F_{g,0}^{(\epsilon)}=\Xi\).  Since
 \(F_{g,j-1}^{(\epsilon)}\in\mathcal H_{g,j}\), the tower property and
 \eqref{eq:app-third-repair-condition} give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}\!\left(F_{g,j}^{(\epsilon)}\right)
 &\,=\,
 \mathbb{E}\!\left[
@@ -2364,12 +2332,15 @@ I_{g,j}^{(\epsilon)}=0
 &\,\le\,
 (1-q_{\epsilon})
 \mathbb{P}\!\left(F_{g,j-1}^{(\epsilon)}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 Iteration yields
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}\!\left(F_{g,m}^{(\epsilon)}\right)
 &\,\leq\,(1-q_{\epsilon})^m.
-\end{align}
+\end{aligned}
+\end{equation}
 Taking complements proves the success bound.
 \end{proof}
 
@@ -2409,25 +2380,30 @@ Either choice satisfies
 \begin{proof}
 If \(q_\epsilon=1\), one attempt succeeds almost surely.  If
 \(0<q_\epsilon<1\), the exact choice satisfies
-\begin{align}
+\begin{equation}
+\begin{aligned}
 m_{\delta}^{\mathrm{exact}}
 \log(1-q_{\epsilon})
 &\,\leq\,\log \delta, &
 (1-q_{\epsilon})^{m_{\delta}^{\mathrm{exact}}}
 &\,\leq\,\delta.
-\end{align}
+\end{aligned}
+\end{equation}
 For the simpler choice, \(1-q_\epsilon\leq e^{-q_\epsilon}\), so
-\begin{align}
+\begin{equation}
+\begin{aligned}
 (1-q_{\epsilon})^{m_{\delta}}
 &\,\leq\,e^{-q_\epsilon m_\delta}
 \,\leq\,\delta.
-\end{align}
+\end{aligned}
+\end{equation}
 Apply Theorem~\ref{thm:generalization}.
 \end{proof}
 
 For example, if a non-oracle proposer had \(q_\epsilon=0.20\) and
 \(\delta=0.05\), then
-\begin{align}
+\begin{equation}
+\begin{aligned}
 m_{\delta}
 &\,=\,
 \left\lceil
@@ -2437,7 +2413,8 @@ m_{\delta}
 1-(1-0.20)^{15}
 &\,=\,1-0.8^{15}
 \approx0.965.
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{corollary}[Cluster coverage by active attempts]
 \label{cor:app-specialist-coverage}
@@ -2484,7 +2461,8 @@ m
 
 \begin{proof}
 Theorem~\ref{thm:generalization} and a union bound give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}\!\left(
 \left(C_{\mathrm{all}}^{(\epsilon)}\right)^c
 \right)
@@ -2497,28 +2475,33 @@ Theorem~\ref{thm:generalization} and a union bound give
 &\,\leq\,
 \sum_{g\in\mathcal{G}_{\mathrm{act}}}
 (1-q_{\epsilon,g})^{m_g}.
-\end{align}
+\end{aligned}
+\end{equation}
 Taking complements proves the first claim.  For uniform \(m\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sum_{g\in\mathcal{G}_{\mathrm{act}}}
 (1-q_{\epsilon,g})^{m}
 &\,\leq\,K_{\mathrm{act}}(1-q_{\min})^m, \\
 K_{\mathrm{act}}(1-q_{\min})^{m}
 &\,\leq\,K_{\mathrm{act}}e^{-q_{\min}m}
 \,\leq\,\delta.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 For \(K_{\mathrm{act}}=3\), \(q_{\min}=0.20\), and \(\delta=0.05\), the
 sufficient uniform budget is
-\begin{align}
+\begin{equation}
+\begin{aligned}
 m
 &\,=\,
 \left\lceil
 5\log(60)
 \right\rceil
 \,=\,21.
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{proposition}[Rollout and archive-size complexity under the implemented gate]
 \label{prop:3}
@@ -2527,7 +2510,8 @@ Let \(T,K_{\max}\in\mathbb N\), \(K_1=|A_1|\), and
 reflection attempt after round \(t\), and set
 \(M_T(u)=\sum_{t=1}^T J_t(u)\).  Assume the archive changes only when the gate
 inserts one child, obeys the cap, and enforces the cooldown:
-\begin{align}
+\begin{equation}
+\begin{aligned}
 |A_{t+1}(u)|
 &\,=\,|A_t(u)|+J_t(u), &
 |A_t(u)|
@@ -2535,7 +2519,8 @@ inserts one child, obeys the cap, and enforces the cooldown:
 J_s(u)=J_t(u)=1,\ s<t
 &\quad\Longrightarrow\quad
 t-s\,\geq\,\kappa+1.
-\end{align}
+\end{aligned}
+\end{equation}
 Then
 \begin{equation}
 M_T(u)
@@ -2571,26 +2556,31 @@ K_1+M_T(u)
 \end{equation}
 so \(M_T(u)\leq K_{\max}-K_1\).  If \(M_T(u)\geq1\), order the reflection
 times as \(1\leq s_1<\cdots<s_{M_T(u)}\leq T\).  The cooldown gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 s_j
 &\,\geq\,1+(j-1)(\kappa+1), &
 T
 &\,\geq\,1+(M_T(u)-1)(\kappa+1).
-\end{align}
+\end{aligned}
+\end{equation}
 Rearranging yields the cooldown bound on \(M_T(u)\); combining it with the cap
 proves the stated minimum.  Finally,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sum_{t=1}^{T}|A_t(u)|
 &\,\leq\,T K_{\max}, &
 \mathrm{Rollouts}_T(u)
 &\,=\,T+c_{\mathrm{ref}}M_T(u),
-\end{align}
+\end{aligned}
+\end{equation}
 and substitution proves the rollout bound.
 \end{proof}
 
 With the experimental values \(T=300\), \(K_1=12\), \(K_{\max}=24\), and
 \(\kappa=20\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 M_T(u)
 &\,\leq\,\min\!\left\{
 24-12,\,
@@ -2601,7 +2591,8 @@ M_T(u)
 &\,\leq\,300\cdot24\,=\,7200, \\
 T+M_T(u)
 &\,\leq\,300+12\,=\,312.
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{proposition}[Discovery reserve induced by first useful specialists]
 \label{prop:4}
@@ -2617,7 +2608,8 @@ V_{\mathrm{static}}(A_1).
 Let \(\pi_g=\mathbb P(g(U)=g)>0\) for
 \(g\in\mathcal G_{\mathrm{act}}\), and fix \(s\in\{0,\ldots,T\}\).  With
 \(\tau_{g,j}=\infty\) for an attempt that never occurs, define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 N_g(s)
 &\,=\,
 \sum_{j\,\ge\, 1}
@@ -2629,7 +2621,8 @@ N_g(s)\geq m_g
 \mid
 g(U)=g
 \right).
-\end{align}
+\end{aligned}
+\end{equation}
 The joint probability that the required attempts occur by round \(s\) and one
 of them succeeds is
 \begin{equation}
@@ -2718,7 +2711,8 @@ h_g(s).
 
 \begin{proof}
 Theorem~\ref{thm:main} and the exploration certificate give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \rho_T
 &\,=\,
 \Delta_{\mathrm{route}}(A_1)
@@ -2728,18 +2722,22 @@ Theorem~\ref{thm:main} and the exploration certificate give
 \bar L_T, &
 \bar L_T
 &\,\leq\,\frac{B_T}{T}.
-\end{align}
+\end{aligned}
+\end{equation}
 For every \(t>s\), persistence gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[G_t(U)]
 &\,\geq\,
 \sum_{g\in\mathcal{G}_{\mathrm{act}}}
 \pi_g
 \epsilon_g
 h_g(s).
-\end{align}
+\end{aligned}
+\end{equation}
 Since \(G_t(U)\geq0\), averaging over the final \(T-s\) rounds yields
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \bar G_T
 &\,\geq\,
 \frac{T-s}{T}
@@ -2747,10 +2745,12 @@ Since \(G_t(U)\geq0\), averaging over the final \(T-s\) rounds yields
 \pi_g
 \epsilon_g
 h_g(s).
-\end{align}
+\end{aligned}
+\end{equation}
 Substitution proves the reserve bound, and its strict positivity is
 \(\rho_T>0\).  Finally,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \frac{1}{T}
 \mathcal{R}_{T}^{\mathrm{static}}
 &\,=\,
@@ -2760,7 +2760,8 @@ R_T
 \\
 &\,=\,
 -\rho_T,
-\end{align}
+\end{aligned}
+\end{equation}
 which proves the regret bound.
 \end{proof}
 
@@ -2774,7 +2775,8 @@ This reserve links Theorem~\ref{thm:generalization} to the decomposition, but
 does not certify the oracle-assisted mechanism in the saved runs.  Those runs
 report structural terms and an observed-reward residual.  For the corrected
 \texttt{general} row in Table~\ref{tab:main},
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \Delta_{\mathrm{route}}(A_1)
 +
 \bar G_T
@@ -2793,7 +2795,8 @@ V_{\mathrm{static}}(A_1)
 \\
 &\,=\,
 0.865,
-\end{align}
+\end{aligned}
+\end{equation}
 matching the reported \(R_T^{\mathrm{obs}}\approx0.864\) up to rounding.  This
 checks only the observed-reward identity; it is not a test of the mean-reward
 decomposition or a non-oracle proof of discovery.
@@ -2830,7 +2833,8 @@ V_{\mathrm{static}}(A_1)
 
 \begin{proof}
 Subtract \(V_{\mathrm{static}}(A_1)\) from Theorem~\ref{thm:main}:
-\begin{align}
+\begin{equation}
+\begin{aligned}
 R_T
 -
 V_{\mathrm{static}}(A_1)
@@ -2840,7 +2844,8 @@ V_{\mathrm{static}}(A_1)
 \bar G_T
 -
 \bar L_T.
-\end{align}
+\end{aligned}
+\end{equation}
 Strict positivity is equivalent to the first claim.  A fixed archive has
 \(G_t(U)=0\), proving the second.
 \end{proof}
@@ -2868,12 +2873,14 @@ L_t(U),G_t(U)\in[0,1]\quad\text{almost surely},
 
 \begin{proof}
 Feasibility and append-only growth imply
-\begin{align}
+\begin{equation}
+\begin{aligned}
 m_t(U)
 &\,\geq\,\mu(U,a_t(U)), &
 m_t(U)
 &\,\geq\,m_1(U).
-\end{align}
+\end{aligned}
+\end{equation}
 The reward range bounds both differences above by one.  Averaging preserves
 the interval.
 \end{proof}
@@ -2905,7 +2912,8 @@ V_{\mathrm{static}}(A_1)
 
 \begin{proof}
 For every fixed user and trajectory,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mu(u,a_t^u)
 &\,=\,
 m_1^u
@@ -2913,10 +2921,12 @@ m_1^u
 G_t^u
 -
 L_t^u.
-\end{align}
+\end{aligned}
+\end{equation}
 Taking the trajectory expectation conditional on \(u\), then integrating over
 \(U\), gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[\mu(U,a_t(U))]
 &\,=\,
 \mathbb{E}[m_1^U]
@@ -2924,9 +2934,11 @@ Taking the trajectory expectation conditional on \(u\), then integrating over
 \mathbb{E}[G_t(U)]
 -
 \mathbb{E}[L_t(U)].
-\end{align}
+\end{aligned}
+\end{equation}
 The common initial archive implies
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[m_1^U]
 &\,=\,
 \mathbb{E}\!\left[
@@ -2941,7 +2953,8 @@ V_{\mathrm{route}}(A_1)
 V_{\mathrm{static}}(A_1)
 +
 \Delta_{\mathrm{route}}(A_1).
-\end{align}
+\end{aligned}
+\end{equation}
 Averaging over \(t\) completes the proof.
 \end{proof}
 
@@ -2952,7 +2965,8 @@ Averaging over \(t\) completes the proof.
 For \(N\) sampled users \(u_1,\ldots,u_N\), let
 \(a_{i,t}\in A_{i,t}\) and
 \(m_{i,t}=\max_{a\in A_{i,t}}\mu(u_i,a)\).  Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widehat R_T
 &\,=\,
 \frac{1}{NT}
@@ -2988,7 +3002,8 @@ For \(N\) sampled users \(u_1,\ldots,u_N\), let
 \sum_{i=1}^{N}
 \sum_{t=1}^{T}
 (m_{i,t}-\mu(u_i,a_{i,t})).
-\end{align}
+\end{aligned}
+\end{equation}
 Then
 \begin{equation}
 \widehat R_T
@@ -3005,7 +3020,8 @@ Then
 
 \begin{proof}
 For each \((i,t)\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mu(u_i,a_{i,t})
 &\,=\,
 m_{i,1}
@@ -3013,9 +3029,11 @@ m_{i,1}
 (m_{i,t}-m_{i,1})
 -
 (m_{i,t}-\mu(u_i,a_{i,t})).
-\end{align}
+\end{aligned}
+\end{equation}
 Summing and dividing by \(NT\) gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widehat R_T
 &\,=\,
 \frac{1}{N}
@@ -3032,7 +3050,8 @@ m_{i,1}
 \widehat{\bar G}_T
 -
 \widehat{\bar L}_T.
-\end{align}
+\end{aligned}
+\end{equation}
 Substitute the definition of \(\widehat\Delta_{\mathrm{route}}(A_1)\).
 \end{proof}
 
@@ -3043,31 +3062,39 @@ not test the proposition.
 
 For the three completed synthetic environments,
 
-\begin{align}
+\begin{equation}
 \label{eq:app-fourth-residual-general}
+\begin{aligned}
 \varepsilon_{\mathrm{general}}
 &\,=\,
 0.570+0.280+0.051-0.036-0.864
 \\
 &\,=\,
-0.001,
-\\[0.5em]
+0.001.
+\end{aligned}
+\end{equation}
+\begin{equation}
 \label{eq:app-fourth-residual-workspace}
+\begin{aligned}
 \varepsilon_{\mathrm{workspace}}
 &\,=\,
 0.577+0.124+0.041-0.043-0.699
 \\
 &\,=\,
-0.000,
-\\[0.5em]
+0.000.
+\end{aligned}
+\end{equation}
+\begin{equation}
 \label{eq:app-fourth-residual-support}
+\begin{aligned}
 \varepsilon_{\mathrm{support}}
 &\,=\,
 0.579+0.215+0.061-0.039-0.816
 \\
 &\,=\,
 0.000.
-\end{align}
+\end{aligned}
+\end{equation}
 
 The nonzero residual in \eqref{eq:app-fourth-residual-general} is a rounding residual, not an additional term in the decomposition.
 
@@ -3093,7 +3120,8 @@ Equality holds exactly when \(h(A_1)\) is population-static optimal.
 \end{proposition}
 
 \begin{proof}
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \Delta_h(A_1)
 -
 \Delta_{\mathrm{route}}(A_1)
@@ -3111,7 +3139,8 @@ V_{\mathrm{static}}(A_1)
 -
 V_h(A_1)
 \,\geq\,0,
-\end{align}
+\end{aligned}
+\end{equation}
 because \(V_{\mathrm{static}}(A_1)\) maximizes over all static candidates.
 \end{proof}
 
@@ -3126,7 +3155,8 @@ Let \(A_t(U)=A_1=\{a_1,a_2\}\), with
 \end{proposition}
 
 \begin{proof}
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{\mathrm{static}}(A_1)
 &\,=\,0.8, &
 V_{\mathrm{route}}(A_1)
@@ -3135,14 +3165,17 @@ V_{\mathrm{route}}(A_1)
 &\,=\,0, &
 \bar G_T
 &\,=\,0.
-\end{align}
+\end{aligned}
+\end{equation}
 Selecting \(a_2\) costs \(0.2\), so \(\bar L_T=0.2\eta\).  Hence
-\begin{align}
+\begin{equation}
+\begin{aligned}
 R_T
 &\,=\,0.8-0.2\eta
 \,<\,0.8
 \,=\,V_{\mathrm{static}}(A_1).
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 \begin{proposition}[Counterexample: a heuristic static baseline can overstate heterogeneity]
@@ -3162,16 +3195,19 @@ If heuristic scores satisfy \(q(a_1)>q(a_2)\), so that \(h(A_1)=a_1\), then
 \end{proposition}
 
 \begin{proof}
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_h(A_1)
 &\,=\,\tfrac12(0.9+0.1)=0.50, &
 \mathbb{E}[\mu(U,a_1)]
 &\,=\,0.50, &
 \mathbb{E}[\mu(U,a_2)]
 &\,=\,\tfrac12(0.8+0.7)=0.75.
-\end{align}
+\end{aligned}
+\end{equation}
 The routed oracle value is
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{\mathrm{route}}(A_1)
 &\,=\,
 \tfrac12
@@ -3185,7 +3221,8 @@ V_{\mathrm{route}}(A_1)
 &\,=\,0.80-0.75=0.05, &
 \Delta_h(A_1)
 &\,=\,0.80-0.50=0.30.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 \begin{proposition}[Counterexample: oracle-assisted reflection makes the discovery bound vacuous]
@@ -3210,12 +3247,14 @@ every finite \(m\).
 \end{proposition}
 
 \begin{proof}
-\begin{align}
+\begin{equation}
+\begin{aligned}
 1-(1-1)^m
 &\,=\,1, &
 1-(1-0)^m
 &\,=\,0.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus the result only reflects the assumed repair probability.  Validating a
 non-oracle proposer requires a separate nontrivial lower bound on
 \(q_{\epsilon,g}\).
@@ -3229,7 +3268,8 @@ The decomposition remains algebraically true, but the term \(G_t\) can no longer
 \end{proposition}
 
 \begin{proof}
-\begin{align}
+\begin{equation}
+\begin{aligned}
 m_1(U)
 &\,=\,1, &
 m_2(U)
@@ -3238,14 +3278,17 @@ G_2(U)
 &\,=\,-1, &
 L_2(U)
 &\,=\,0.
-\end{align}
+\end{aligned}
+\end{equation}
 Yet
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mu(u,b)
 &\,=\,m_1(U)+G_2(U)-L_2(U)
 \,=\,1-1-0
 \,=\,0.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus append-only growth is needed for the sign interpretation, not the
 identity.
 \end{proof}
@@ -3333,7 +3376,8 @@ Assume \(N_t(U)<\infty\) almost surely, each listed candidate is
 
 \begin{proof}
 For each \(n\) and \(z\in\mathbb R\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \{m_t(U)\,\le\, z\}\cap\{N_t(U)=n\}
 &\,=\,
 \bigcap_{j=1}^{n}
@@ -3342,7 +3386,8 @@ For each \(n\) and \(z\in\mathbb R\),
 \right\}
 \cap
 \{N_t(U)=n\}.
-\end{align}
+\end{aligned}
+\end{equation}
 This finite intersection is measurable; taking the countable union over
 \(n\) proves measurability of \(m_t(U)\).  The reward range gives
 \(m_t(U)\in[0,1]\).  Feasibility gives
@@ -3368,7 +3413,8 @@ Thus Theorem~\ref{thm:convergence} applies with \(B_T=b_T+\delta T\).
 
 \begin{proof}
 For \(\mathcal E_T=\{S_T\leq b_T\}\), use \(S_T\leq T\):
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[S_T]
 &\,=\,
 \mathbb{E}[S_T\mathbf{1}\{\mathcal{E}_T\}]
@@ -3377,7 +3423,8 @@ For \(\mathcal E_T=\{S_T\leq b_T\}\), use \(S_T\leq T\):
 &\,\leq\,
 b_T+T\mathbb P(\mathcal E_T^c)
 \,\leq\,b_T+\delta T.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 For \(b_T=12\), \(T=300\), and \(\delta=0.01\), this gives
@@ -3440,8 +3487,9 @@ then
 
 \begin{proof}
 Since \(m_t(U)-r_t=L_t(U)-\xi_t\),
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-trigger-proof-indicator}
+\begin{aligned}
 I_t^{(\tau)}
 &\,\le\,
 \mathbf{1}\{L_t(U)+|\xi_t|>\tau\}
@@ -3450,17 +3498,21 @@ I_t^{(\tau)}
 \mathbf{1}\{L_t(U)>\tau/2\}
 +
 \mathbf{1}\{|\xi_t|>\tau/2\}.
-\end{align}
+\end{aligned}
+\end{equation}
 Markov's inequality and the sub-Gaussian tail bound give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}\{L_t(U)>\tau/2\}
 &\,\leq\,\frac{2}{\tau}\mathbb E[L_t(U)], &
 \mathbb{P}\{|\xi_t|>\tau/2\}
 &\,\leq\,2\exp\!\left(-\frac{\tau^2}{8\sigma^2}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 Taking expectations and summing over \(t\) gives
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-trigger-proof-sum}
+\begin{aligned}
 \mathbb{E}[N_T^{(\tau)}]
 &\,\le\,
 \frac{2}{\tau}
@@ -3469,15 +3521,17 @@ Taking expectations and summing over \(t\) gives
 2T\exp\!\left(
 -\frac{\tau^2}{8\sigma^2}
 \right).
-\end{align}
+\end{aligned}
+\end{equation}
 This proves \eqref{eq:app-fifth-trigger-bound}; substituting
 \eqref{eq:app-fifth-trigger-BT-assumption} gives
 \eqref{eq:app-fifth-trigger-BT}.
 \end{proof}
 
 For \(T=100\), \(B_T=4\), \(\tau=0.20\), and \(\sigma=0.05\), the bound is
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-trigger-example}
+\begin{aligned}
 \mathbb{E}[N_T^{(\tau)}]
 &\,\le\,
 \frac{2\cdot 4}{0.20}
@@ -3489,7 +3543,8 @@ For \(T=100\), \(B_T=4\), \(\tau=0.20\), and \(\sigma=0.05\), the bound is
 &\,=\,
 40+200e^{-2}
 \,\approx\,67.07.
-\end{align}
+\end{aligned}
+\end{equation}
 
 This constant is conservative; it is used only to justify the direction of the trigger-count control, not as an empirical estimate of reflection quality.
 
@@ -3569,8 +3624,9 @@ a^\star
 \sum_{g=1}^{K_{\mathrm{cl}}}\pi_g\nu_{g,a}.
 \end{equation}
 Then
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-margin-proof-delta}
+\begin{aligned}
 \Delta_{\mathrm{route}}(A)
 &\,\ge\,
 \sum_{g=1}^{K_{\mathrm{cl}}}\pi_g d_g(a^\star).
@@ -3583,7 +3639,8 @@ Then
 \eta\sum_{g\in H_{a^\star}(\eta)}\pi_g
 \,\geq\,
 \rho\eta.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 The bound is tight. For equal cluster masses and value matrix
@@ -3597,14 +3654,16 @@ g=2 & 0.50 & 0.80
 \end{array}.
 \end{equation}
 we have \(\pi_1=\pi_2=1/2\), \(\rho=1/2\), and \(\eta=0.30\). Therefore
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-margin-example-exact}
+\begin{aligned}
 \Delta_{\mathrm{route}}(A)
 &\,\geq\,\rho\eta=0.15,
 &
 \Delta_{\mathrm{route}}(A)
 &\,=\,0.80-\tfrac12(0.80+0.50)=0.15.
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{proposition}[Contraction repair condition implies an explicit discovery-time bound]
 \label{prop:14}
@@ -3659,13 +3718,15 @@ to obtain
 
 \begin{proof}
 Iteration and the binary nature of \(Z_j\) give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \Delta_{g,m}
 &\,\le\,
 \Delta_{g,0}\prod_{j=1}^{m}(1-\gamma Z_j)
 \,=\,
 \Delta_{g,0}(1-\gamma)^{S_m}.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus \(S_m\geq s_\epsilon\) implies
 \begin{equation}
 \Delta_{g,m}
@@ -3680,8 +3741,9 @@ Let
 \lambda=\log 2.
 \end{equation}
 For any \(s\le mq/2\), Markov's inequality applied to \(\exp(-\lambda S_m)\) gives
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-mgf}
+\begin{aligned}
 \mathbb{P}(S_m\,\le\, s)
 &\,=\,
 \mathbb{P}\!\left(e^{-\lambda S_m}\,\ge\, e^{-\lambda s}\right)
@@ -3689,10 +3751,12 @@ For any \(s\le mq/2\), Markov's inequality applied to \(\exp(-\lambda S_m)\) giv
 &\,\le\,
 e^{\lambda s}
 \mathbb{E}[e^{-\lambda S_m}].
-\end{align}
+\end{aligned}
+\end{equation}
 Using independence and \(\mathbb{P}(Z_j=1)\ge q\),
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-factor}
+\begin{aligned}
 \mathbb{E}[e^{-\lambda S_m}]
 &\,=\,
 \prod_{j=1}^{m}
@@ -3713,10 +3777,12 @@ Using independence and \(\mathbb{P}(Z_j=1)\ge q\),
 \\
 &\,\le\,
 \exp\!\left[-mq(1-e^{-\lambda})\right].
-\end{align}
+\end{aligned}
+\end{equation}
 With \(s=s_\epsilon\) and \(s_\epsilon\le mq/2\),
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-chernoff}
+\begin{aligned}
 \mathbb{P}(S_m<s_\epsilon)
 &\,\le\,
 \exp\!\left[
@@ -3724,10 +3790,12 @@ With \(s=s_\epsilon\) and \(s_\epsilon\le mq/2\),
 -
 mq(1-e^{-\lambda})
 \right].
-\end{align}
+\end{aligned}
+\end{equation}
 Since \(\lambda=\log 2\) and \(e^{-\lambda}=1/2\),
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-constant}
+\begin{aligned}
 \lambda\frac{mq}{2}
 -
 mq(1-e^{-\lambda})
@@ -3743,17 +3811,21 @@ mq\left(
 \\
 &\,\le\,
 -\frac{mq}{8}.
-\end{align}
+\end{aligned}
+\end{equation}
 This proves
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-final-tail}
+\begin{aligned}
 \mathbb{P}(\Delta_{g,m}>\epsilon)
 &\,\le\,
 \exp\!\left(-\frac{mq}{8}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 If \eqref{eq:app-fifth-contract-m-delta} holds, then
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-delta-conditions}
+\begin{aligned}
 mq
 &\,\ge\,
 2s_\epsilon,
@@ -3761,17 +3833,20 @@ mq
 mq
 &\,\ge\,
 8\log(1/\delta).
-\end{align}
+\end{aligned}
+\end{equation}
 Hence
-\begin{align}
+\begin{equation}
 \label{eq:app-fifth-contract-proof-delta}
+\begin{aligned}
 \mathbb{P}(\Delta_{g,m}>\epsilon)
 &\,\le\,
 \exp[-\log(1/\delta)]
 \\
 &\,=\,
 \delta.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 For \(\Delta_{g,0}=0.40\), \(\epsilon=0.05\), \(\gamma=0.50\),
@@ -3844,7 +3919,8 @@ G_{t+1}(U)\,\ge\, G_t(U).
 \end{lemma}
 
 \begin{proof}
-\begin{align}
+\begin{equation}
+\begin{aligned}
 0
 &\,\leq\,
 m_1(U)
@@ -3859,7 +3935,8 @@ m_{t+1}(U)
 m_t(U)-\mu(U,a_t(U))
 \,\leq\,
 1.
-\end{align}
+\end{aligned}
+\end{equation}
 The first line follows from archive inclusion and the reward range; the
 second follows from feasibility. Substitution into the definitions of
 \(G_t\) and \(L_t\) proves all three claims.
@@ -3868,14 +3945,16 @@ second follows from feasibility. Substitution into the definitions of
 \begin{lemma}[From high-probability current-archive regret to expected exploration cost]
 \label{lem:16}
 Let
-\begin{align}
+\begin{equation}
 \label{eq:app-six-ST-def}
+\begin{aligned}
 S_T^L
 &\,=\,
 \sum_{t=1}^{T}L_t(U),
 &
 \quad 0\leq L_t(U)\leq1.
-\end{align}
+\end{aligned}
+\end{equation}
 If
 \begin{equation}
 \label{eq:app-six-hp-event}
@@ -3924,7 +4003,8 @@ Apply Lemma~\ref{lem:6} with \(S_T=S_T^L\) and
 \end{proof}
 
 For example, \(C_{300}(1/300)=12\) gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 B_{300}
 &\,\le\,
 12+\frac{300}{300}
@@ -3933,7 +4013,8 @@ B_{300}
 \frac{B_{300}}{300}
 &\,\le\,
 0.0433.
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{lemma}[Explicit constants for high-gap trigger counts]
 \label{lem:17}
@@ -4002,7 +4083,8 @@ the first. Substituting \eqref{eq:app-six-trigger-BT} proves the final claim.
 \end{proof}
 
 For \(T=300\), \(\tau=0.15\), \(\sigma=0.05\), and \(B_T=12\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \frac{2B_T}{\tau}
 +
 2T\exp\!\left(-\frac{\tau^2}{8\sigma^2}\right)
@@ -4016,7 +4098,8 @@ For \(T=300\), \(\tau=0.15\), \(\sigma=0.05\), and \(B_T=12\),
 &
 \mathbb E[N_T(0.15)]
 &\,\leq\,300.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus the deterministic cap dominates. This loose bound does not imply the
 empirical archive-growth claim in Section~\ref{sec:experiments}.
 
@@ -4056,7 +4139,8 @@ K_{\max}-K_1,\;
 
 \begin{proof}
 The case \(M_T=0\) is immediate. Otherwise, the cooldown gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 s_j
 &\,\ge\,
 1+(j-1)(\kappa+1),
@@ -4064,7 +4148,8 @@ s_j
 1+(M_T-1)(\kappa+1)
 &\,\le\,
 T.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus \(M_T\leq1+\lfloor(T-1)/(\kappa+1)\rfloor\). Unique insertion and the
 cap also give \(K_1+M_T\leq K_{\max}\). Their minimum proves
 \eqref{eq:app-six-MT-bound}, and \(|A_t(U)|\leq K_1+M_T\) proves the second
@@ -4072,7 +4157,8 @@ claim.
 \end{proof}
 
 For \(K_1=12\), \(K_{\max}=24\), \(T=300\), and \(\kappa=20\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 1+\left\lfloor\frac{T-1}{\kappa+1}\right\rfloor
 &\,=\,
 1+\left\lfloor\frac{299}{21}\right\rfloor
@@ -4084,7 +4170,8 @@ M_T
 &
 |A_t(U)|
 &\,\leq\,24.
-\end{align}
+\end{aligned}
+\end{equation}
 
 \begin{proposition}[Logged decomposition estimators and finite-sample radii]
 \label{prop:16}
@@ -4176,8 +4263,9 @@ For \(\delta\in(0,1)\), define
 \sqrt{\frac{\log(10K_1/\delta)}{2N}}.
 \end{align}
 With probability at least \(1-\delta\), the following simultaneous bounds hold:
-\begin{align}
+\begin{equation}
 \label{eq:app-six-estimator-bounds}
+\begin{aligned}
 \left|
 \widehat V_{\mathrm{static}}(A_1)-V_{\mathrm{static}}(A_1)
 \right|
@@ -4207,7 +4295,8 @@ With probability at least \(1-\delta\), the following simultaneous bounds hold:
 \right|
 &\,\le\,
 \varepsilon_{\mathrm{sc}}(N,\delta).
-\end{align}
+\end{aligned}
+\end{equation}
 Consequently,
 \begin{equation}
 \label{eq:app-six-delta-radius}
@@ -4248,18 +4337,21 @@ archive-count symbol \(M_T\):
 
 \begin{proof}
 For the exact logged identity, use the pointwise relation
-\begin{align}
+\begin{equation}
 \label{eq:app-six-proof-sample-pointwise}
+\begin{aligned}
 \mu(U_n,a_{n,t})
 &\,=\,
 m_{n,t}-L_{n,t}
 \\
 &\,=\,
 m_{n,1}+G_{n,t}-L_{n,t}.
-\end{align}
+\end{aligned}
+\end{equation}
 Averaging gives
-\begin{align}
+\begin{equation}
 \label{eq:app-six-proof-sample-average}
+\begin{aligned}
 \widehat{\mathcal{V}}_T
 &\,=\,
 \frac{1}{NT}\sum_{n=1}^{N}\sum_{t=1}^{T}
@@ -4287,13 +4379,15 @@ Averaging gives
 \widehat{\bar G}_T
 -
 \widehat{\bar L}_T.
-\end{align}
+\end{aligned}
+\end{equation}
 
 For each \(a\in A_1\), set
 \(\widehat\mu_a=N^{-1}\sum_n\mu(U_n,a)\) and
 \(\mu_a=\mathbb E[\mu(U,a)]\). Hoeffding's inequality and a union bound give
-\begin{align}
+\begin{equation}
 \label{eq:app-six-proof-static-union}
+\begin{aligned}
 \mathbb{P}\!\left(
 \max_{a\in A_1}|\widehat\mu_a-\mu_a|>\varepsilon
 \right)
@@ -4303,7 +4397,8 @@ For each \(a\in A_1\), set
 \\
 &\,=\,
 2K_1\exp(-2N\varepsilon^2).
-\end{align}
+\end{aligned}
+\end{equation}
 Moreover, the maximum map is one-Lipschitz in the sup norm:
 \begin{equation}
 \left|
@@ -4319,8 +4414,9 @@ Setting \(\varepsilon=\varepsilon_{\mathrm{st}}(N,K_1,\delta)\) makes
 static bound.
 
 For the other four scalar terms, define the per-trajectory bounded variables
-\begin{align}
+\begin{equation}
 \label{eq:app-six-proof-Z-defs}
+\begin{aligned}
 Z_n^{\mathrm{route}}
 &\,=\,
 m_{n,1},
@@ -4336,7 +4432,8 @@ Z_n^{L}
 Z_n^{\mathcal{V}}
 &\,=\,
 \frac{1}{T}\sum_{t=1}^{T}\mu(U_n,a_{n,t}).
-\end{align}
+\end{aligned}
+\end{equation}
 Lemma~\ref{lem:15} places all four variables in \([0,1]\). Hence, for each
 one, Hoeffding's inequality gives
 \begin{equation}
@@ -4352,7 +4449,8 @@ Setting \(\varepsilon=\varepsilon_{\mathrm{sc}}(N,\delta)\) makes each
 failure probability at most \(\delta/5\). A union bound over these four events
 and the static event proves \eqref{eq:app-six-estimator-bounds}. The remaining
 bounds follow from
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \left|
 \widehat\Delta_{\mathrm{route}}-\Delta_{\mathrm{route}}
 \right|
@@ -4378,7 +4476,8 @@ bounds follow from
 \\
 &\,\le\,
 \varepsilon_{\mathrm{st}}+3\varepsilon_{\mathrm{sc}}.
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 The saved synthetic runs do not meet the independence premise with
@@ -4393,7 +4492,8 @@ without independence.
 \label{lem:18}
 Let \(M=NT\), enumerate the observations by \(s\in\{1,\ldots,M\}\), and
 write
-\begin{align}
+\begin{equation}
+\begin{aligned}
 r_s
 &\,=\,
 \mu_s+\varepsilon_s,
@@ -4401,7 +4501,8 @@ r_s
 \mu_s
 &\,=\,
 \mu(U_s,a_s).
-\end{align}
+\end{aligned}
+\end{equation}
 Suppose \((\varepsilon_s)\) is a martingale-difference sequence with respect
 to \((\mathcal H_s)\) and is conditionally \(\sigma\)-sub-Gaussian:
 \begin{equation}
@@ -4418,7 +4519,8 @@ to \((\mathcal H_s)\) and is conditionally \(\sigma\)-sub-Gaussian:
 \qquad(\lambda\in\mathbb R,\ \sigma>0).
 \end{equation}
 Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widehat{\mathcal{V}}_{T}^{\mathrm{obs}}
 &\,=\,
 \frac{1}{M}\sum_{s=1}^{M}r_s,
@@ -4426,7 +4528,8 @@ Define
 \widehat{\mathcal{V}}_{T}^{\mathrm{mean}}
 &\,=\,
 \frac{1}{M}\sum_{s=1}^{M}\mu_s.
-\end{align}
+\end{aligned}
+\end{equation}
 Then, for every \(\epsilon>0\),
 \begin{equation}
 \label{eq:app-six-noise-tail}
@@ -4461,13 +4564,16 @@ Equivalently, for every \(\delta\in(0,1)\), with probability at least
 \begin{proof}
 For \(S_M=\sum_{s=1}^{M}\varepsilon_s\), iterated conditional expectation
 gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}\!\left[\exp(\lambda S_M)\right]
 &\,\le\,
 \exp\!\left(\frac{M\lambda^2\sigma^2}{2}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 Chernoff's bound, optimized at \(\lambda=\epsilon/\sigma^2\), yields
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{P}(S_M\,\ge\, M\epsilon)
 &\,\le\,
 \exp\!\left(-\frac{M\epsilon^2}{2\sigma^2}\right),
@@ -4475,25 +4581,29 @@ Chernoff's bound, optimized at \(\lambda=\epsilon/\sigma^2\), yields
 \mathbb{P}(S_M\,\le\, -M\epsilon)
 &\,\le\,
 \exp\!\left(-\frac{M\epsilon^2}{2\sigma^2}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 A union bound proves \eqref{eq:app-six-noise-tail}; solving it for
 \(\epsilon\) proves \eqref{eq:app-six-noise-radius}.
 \end{proof}
 
 At \(M=40\cdot300=12000\), \(\sigma=0.05\), and \(\delta=0.05\),
 Lemma~\ref{lem:18} gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sigma\sqrt{\frac{2\log(2/\delta)}{M}}
 &\,=\,
 0.05\sqrt{\frac{2\log(40)}{12000}}
 \\
 &\approx
 0.00124.
-\end{align}
+\end{aligned}
+\end{equation}
 
 If the simulator clips noisy rewards, replace the theoretical mean and
 residual by
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mu_{\mathrm{clip}}(u,a)
 &\,=\,
 \mathbb{E}\!\left[
@@ -4503,7 +4613,8 @@ residual by
 \varepsilon^{\mathrm{clip}}_s
 &\,=\,
 r_s-\mu_{\mathrm{clip}}(U_s,a_s).
-\end{align}
+\end{aligned}
+\end{equation}
 Because the clipped reward lies in \([0,1]\), Hoeffding--Azuma gives
 
 \begin{equation}
@@ -4550,14 +4661,16 @@ We first restate, in full, the per-variant numbers behind Section~\ref{sec:exper
 
 The five variants are abbreviated as
 
-\begin{align}
+\begin{equation}
 \label{eq:app-variants}
+\begin{aligned}
 \mathrm{F} &\,=\, \mathrm{full},\\
 \mathrm{NR} &\,=\, \mathrm{no\_routing},\\
 \mathrm{NF} &\,=\, \mathrm{no\_reflection},\\
 \mathrm{NP} &\,=\, \mathrm{no\_personalization},\\
 \mathrm{C1} &\,=\, \mathrm{collapse\_1}.
-\end{align}
+\end{aligned}
+\end{equation}
 
 The mean realized routed value across $5$ seeds and $8$ users in environment $e$ for variant $v$ is
 
@@ -4595,12 +4708,14 @@ The variant-wise routing effect is
 
 Numerically,
 
-\begin{align}
+\begin{equation}
 \label{eq:app-routing-numbers}
+\begin{aligned}
 \Delta_{\mathrm{route}}(\mathrm{general}) &\approx 0.247,\\
 \Delta_{\mathrm{route}}(\mathrm{workspace}) &\approx 0.142,\\
 \Delta_{\mathrm{route}}(\mathrm{support}) &\approx 0.218.
-\end{align}
+\end{aligned}
+\end{equation}
 
 The reflection effect is
 
@@ -4672,15 +4787,17 @@ For each environment we form
 
 Substituting the values from Section~\ref{sec:experiments},
 
-\begin{align}
+\begin{equation}
 \label{eq:app-residual-num}
-\rho_{\mathrm{obs}}(\mathrm{general})  &\,=\, 0.864 - (0.570 + 0.280 + 0.051 - 0.036)\notag\\
+\begin{aligned}
+\rho_{\mathrm{obs}}(\mathrm{general})  &\,=\, 0.864 - (0.570 + 0.280 + 0.051 - 0.036)\\
                         &\,=\, 0.864 - 0.865 = -0.001,\\
-\rho_{\mathrm{obs}}(\mathrm{workspace})&\,=\, 0.699 - (0.577 + 0.124 + 0.041 - 0.043)\notag\\
+\rho_{\mathrm{obs}}(\mathrm{workspace})&\,=\, 0.699 - (0.577 + 0.124 + 0.041 - 0.043)\\
                         &\,=\, 0.699 - 0.699 = 0.000,\\
-\rho_{\mathrm{obs}}(\mathrm{support})  &\,=\, 0.816 - (0.579 + 0.215 + 0.061 - 0.039)\notag\\
+\rho_{\mathrm{obs}}(\mathrm{support})  &\,=\, 0.816 - (0.579 + 0.215 + 0.061 - 0.039)\\
                         &\,=\, 0.816 - 0.816 = 0.000.
-\end{align}
+\end{aligned}
+\end{equation}
 
 The displayed residuals come only from rounding the table entries. They are
 not Monte Carlo errors and do not test the mean-reward identity
@@ -5496,10 +5613,12 @@ Throughout, we use \(N_s=5\) seeds, \(N_u=8\) users per environment, \(T=300\),
 
 The five ablation variants are
 
-\begin{align}
+\begin{equation}
 \label{eq:app-tab-variants}
+\begin{aligned}
 \mathcal{V} \;=\; \{\,\texttt{full},\; \texttt{no\_routing},\; \texttt{no\_reflection},\; \texttt{no\_personalization},\; \texttt{collapse\_1}\,\},
-\end{align}
+\end{aligned}
+\end{equation}
 
 and the three environments are
 
@@ -6312,8 +6431,9 @@ X^\top X
 \end{align}
 
 With \(\lambda=1\), the effective dimension is
-\begin{align}
+\begin{equation}
 \label{eq:hyper-example-deff-app}
+\begin{aligned}
 d_{\mathrm{eff}}(\Omega;X)
 &=
 \operatorname{tr}
@@ -6340,18 +6460,21 @@ d_{\mathrm{eff}}(\Omega;X)
 \\
 &\approx
 0.910 .
-\end{align}
+\end{aligned}
+\end{equation}
 
 By contrast, identity ridge gives
-\begin{align}
+\begin{equation}
 \label{eq:hyper-example-identity}
+\begin{aligned}
 d_{\mathrm{eff}}(I;X)
 &=
 \frac{9}{10}+\frac{1}{2}
 \\
 &=
 1.400 .
-\end{align}
+\end{aligned}
+\end{equation}
 
 Thus the same data matrix has smaller exploration geometry when the archive covariance says the second coordinate is unlikely to matter.
 
@@ -6375,7 +6498,9 @@ y
 \end{align}
 
 Using the same \(\Omega\) and \(\lambda=1\), the generalized design is
-\begin{align}
+\begin{equation}
+\label{eq:hyper-example-V}
+\begin{aligned}
 V^{\mathrm{hyper}}
 &\,=\,
 X^\top X+\Omega^{-1}
@@ -6395,17 +6520,21 @@ X^\top X+\Omega^{-1}
 \begin{bmatrix}
 6&0\\
 0&100
-\end{bmatrix},
-\label{eq:hyper-example-V}
-\\
+\end{bmatrix}.
+\end{aligned}
+\end{equation}
+\begin{equation}
+\label{eq:hyper-example-Xty}
 X^\top y
-&\,=\,
+\;=\;
 \begin{bmatrix}
 5\\
 0
-\end{bmatrix},
-\label{eq:hyper-example-Xty}
-\\
+\end{bmatrix}.
+\end{equation}
+\begin{equation}
+\label{eq:hyper-example-theta}
+\begin{aligned}
 \widehat{\theta}
 &\,=\,
 \begin{bmatrix}
@@ -6421,14 +6550,15 @@ X^\top y
 \begin{bmatrix}
 5/6\\
 0
-\end{bmatrix},
-\label{eq:hyper-example-theta}
-\\
-\sqrt{x^\top (V^{\mathrm{hyper}})^{-1}x}
-&\,=\,
-\sqrt{1/6}.
+\end{bmatrix}.
+\end{aligned}
+\end{equation}
+\begin{equation}
 \label{eq:hyper-example-width}
-\end{align}
+\sqrt{x^\top (V^{\mathrm{hyper}})^{-1}x}
+\;=\;
+\sqrt{1/6}.
+\end{equation}
 
 \subsection{Shared-structure assumption}
 
@@ -6622,8 +6752,9 @@ x_s(a)\xi_s.
 \end{align}
 
 Using the reward model, the estimator error satisfies
-\begin{align}
+\begin{equation}
 \label{eq:hyper-sn-proof-error}
+\begin{aligned}
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 &=
 \left(V_{a,t}^{\Omega}\right)^{-1}
@@ -6657,11 +6788,14 @@ S_{a,t}
 -
 \left(V_{a,t}^{\Omega}\right)^{-1}
 A\theta_a .
-\end{align}
+\end{aligned}
+\end{equation}
 
 Taking the \(V_{a,t}^{\Omega}\)-norm, applying the triangle inequality, and
 using \(V_{a,t}^{\Omega}\succeq A\) give
-\begin{align}
+\begin{equation}
+\label{eq:hyper-sn-proof-triangle}
+\begin{aligned}
 \left\|
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right\|_{V_{a,t}^{\Omega}}
@@ -6673,8 +6807,11 @@ S_{a,t}
 \left\|
 A\theta_a
 \right\|_{\left(V_{a,t}^{\Omega}\right)^{-1}} .
-\label{eq:hyper-sn-proof-triangle}
-\\
+\end{aligned}
+\end{equation}
+\begin{equation}
+\label{eq:hyper-sn-proof-bias}
+\begin{aligned}
 \left\|
 A\theta_a
 \right\|_{\left(V_{a,t}^{\Omega}\right)^{-1}}^2
@@ -6689,14 +6826,16 @@ A\theta_a
 \lambda\theta_a^\top\Omega^{-1}\theta_a
 \,\leq\,
 \lambda S_{\Omega}^2.
-\label{eq:hyper-sn-proof-bias}
-\end{align}
+\end{aligned}
+\end{equation}
 
 It remains to control the martingale term. If \(\sigma=0\), the conditional
 moment-generating-function assumption implies \(\xi_s=0\) almost surely, so
 the claim is immediate. Suppose \(\sigma>0\). For fixed
 \(z\in\mathbb{R}^d\), define
-\begin{align}
+\begin{equation}
+\label{eq:hyper-sn-proof-mgf}
+\begin{aligned}
 M_{a,t}(z)
 &\,=\,
 \exp\!\left(
@@ -6707,7 +6846,6 @@ z^\top
 \left(V_{a,t}^{\Omega}-A\right)
 z
 \right),
-\label{eq:hyper-sn-proof-mgf}
 \\
 \mathbb E\!\left[
 \exp\!\left(
@@ -6719,13 +6857,15 @@ z
 &\,\leq\,
 1
 \quad\text{at every selected round \(s\)}.
-\end{align}
+\end{aligned}
+\end{equation}
 At an unselected round the process does not change. Hence
 \((M_{a,t}(z))_{t\le T}\) is a nonnegative supermartingale with initial value
 one.
 
 Let
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \varphi_A(z)
 &\,=\,
 \frac{\det(A)^{1/2}}{(2\pi)^{d/2}}
@@ -6734,7 +6874,8 @@ Let
 \mathcal M_{a,t}
 &\,=\,
 \int_{\mathbb R^d}M_{a,t}(z)\varphi_A(z)\,dz.
-\end{align}
+\end{aligned}
+\end{equation}
 The first expression is the Gaussian density with precision \(A\).
 Tonelli's theorem shows that \((\mathcal M_{a,t})_{t\le T}\) is also a
 nonnegative supermartingale with initial value one. Completing the square gives
@@ -6779,14 +6920,19 @@ Consequently, with probability at least \(1-\delta\), simultaneously for every
 \end{equation}
 
 Combining \eqref{eq:hyper-sn-proof-triangle}, \eqref{eq:hyper-sn-proof-bias}, and \eqref{eq:hyper-sn-proof-event} proves
-\begin{align}
+\begin{equation}
+\label{eq:hyper-sn-proof-param}
+\begin{aligned}
 \left\|
 \widehat{\theta}_{a,t}^{\Omega}-\theta_a
 \right\|_{V_{a,t}^{\Omega}}
 &\,\leq\,
-\beta_{a,t}^{\Omega}(\delta),
-\label{eq:hyper-sn-proof-param}
-\\
+\beta_{a,t}^{\Omega}(\delta).
+\end{aligned}
+\end{equation}
+\begin{equation}
+\label{eq:hyper-sn-proof-pred}
+\begin{aligned}
 \left|
 x^\top
 \left(
@@ -6802,9 +6948,9 @@ x^\top
 &\,\leq\,
 \beta_{a,t}^{\Omega}(\delta)
 \sqrt{x^\top\left(V_{a,t}^{\Omega}\right)^{-1}x}.
-\label{eq:hyper-sn-proof-pred}
-\end{align}
-The last two rows apply Cauchy--Schwarz in the
+\end{aligned}
+\end{equation}
+The second display applies Cauchy--Schwarz in the
 \(V_{a,t}^{\Omega}\)-inner product.
 \end{proof}
 
@@ -6836,8 +6982,9 @@ A concrete confidence-bound computation is useful. Suppose
 \end{align}
 
 Then the confidence radius is
-\begin{align}
+\begin{equation}
 \label{eq:hyper-bound-example-beta}
+\begin{aligned}
 \beta_{a,t}^{\Omega}(\delta)
 &=
 0.05
@@ -6852,7 +6999,8 @@ Then the confidence radius is
 \\
 &\approx
 0.363 .
-\end{align}
+\end{aligned}
+\end{equation}
 
 If a candidate has width \(0.10\), Lemma~\ref{lem:hyper-sn} gives
 \begin{align}
@@ -6930,12 +7078,14 @@ c(R)=
 \label{eq:hyper-elliptical-cR}
 \end{align}
 Then
-\begin{align}
+\begin{equation}
+\label{eq:hyper-elliptical-main}
+\begin{aligned}
 \sum_{s=1}^n \min\{1,q_s\}
 &\,\leq\,
 2\,c(R)\,d_{\mathrm{eff}}(\Omega;X).
-\label{eq:hyper-elliptical-main}
-\end{align}
+\end{aligned}
+\end{equation}
 If additionally \(x_s^\top\Omega x_s\le L_{\Omega}^2\), then
 \begin{align}
 R
@@ -6958,44 +7108,46 @@ d_{\mathrm{eff}}(\Omega;X).
 \begin{proof}
 The matrix determinant lemma, its product over \(s\), and the logarithm of that
 product give
-\begin{align}
+\begin{equation}
+\label{eq:hyper-elliptical-proof-logprod}
+\begin{aligned}
 \det(V_s)
 &\,=\,
 \det(V_{s-1})
 \left(1+x_s^\top V_{s-1}^{-1}x_s\right)
 \,=\,
 \det(V_{s-1})(1+q_s),
-\label{eq:hyper-elliptical-proof-det-update}
 \\
 \frac{\det(V_n)}{\det(V_0)}
 &\,=\,
 \prod_{s=1}^{n}(1+q_s),
-\label{eq:hyper-elliptical-proof-product}
 \\
 \log\frac{\det(V_n)}{\det(V_0)}
 &\,=\,
 \sum_{s=1}^{n}\log(1+q_s).
-\label{eq:hyper-elliptical-proof-logprod}
-\end{align}
+\end{aligned}
+\end{equation}
 
 For every \(q\geq0\), \(\min\{1,q\}\leq2\log(1+q)\). Hence
-\begin{align}
+\begin{equation}
+\label{eq:hyper-elliptical-proof-first}
+\begin{aligned}
 \min\{1,q\}
 &\,\leq\,
 2\log(1+q),
-\label{eq:hyper-elliptical-proof-scalar-min}
 \\
 \sum_{s=1}^{n}\min\{1,q_s\}
 &\,\leq\,
 2\sum_{s=1}^{n}\log(1+q_s)
 \,=\,
 2\log\frac{\det(V_n)}{\det(V_0)}.
-\label{eq:hyper-elliptical-proof-first}
-\end{align}
+\end{aligned}
+\end{equation}
 
 The determinant ratio can be rewritten in the covariance-scaled coordinates:
-\begin{align}
+\begin{equation}
 \label{eq:hyper-elliptical-proof-scaled-det}
+\begin{aligned}
 \log\frac{\det(V_n)}{\det(V_0)}
 &=
 \log
@@ -7007,29 +7159,31 @@ I+
 \\
 &=
 \log\det(I+M).
-\end{align}
+\end{aligned}
+\end{equation}
 
 Let \(\nu_1,\ldots,\nu_d\) be the eigenvalues of \(M\). Then
-\begin{align}
+\begin{equation}
+\label{eq:hyper-elliptical-proof-logdet-eig}
+\begin{aligned}
 &\nu_1,\ldots,\nu_d,
-\label{eq:hyper-elliptical-proof-eigs}
 \\
 0
 &\,\leq\,
 \nu_i
 \,\leq\,
 R,
-\label{eq:hyper-elliptical-proof-eigs-range}
 \\
 \log\det(I+M)
 &\,=\,
 \sum_{i=1}^{d}\log(1+\nu_i).
-\label{eq:hyper-elliptical-proof-logdet-eig}
-\end{align}
+\end{aligned}
+\end{equation}
 
 The effective dimension is
-\begin{align}
+\begin{equation}
 \label{eq:hyper-elliptical-proof-deff-eig}
+\begin{aligned}
 d_{\mathrm{eff}}(\Omega;X)
 &=
 \operatorname{tr}
@@ -7054,13 +7208,15 @@ X^\top X+\lambda\Omega^{-1}
 &=
 \sum_{i=1}^{d}
 \frac{\nu_i}{1+\nu_i}.
-\end{align}
+\end{aligned}
+\end{equation}
 
 For \(z>0\), define
-\begin{align}
+\begin{equation}
+\label{eq:hyper-elliptical-proof-scalar}
+\begin{aligned}
 g(z)=
 \frac{1+z}{z}\log(1+z).
-\label{eq:hyper-elliptical-proof-g}
 \\
 g'(z)
 &\,=\,
@@ -7069,20 +7225,20 @@ g'(z)
 \frac{z-\log(1+z)}{z^2}
 \,\geq\,
 0,
-\label{eq:hyper-elliptical-proof-gprime}
 \\
 \log(1+z)
 &\,\leq\,
 c(R)\frac{z}{1+z}
 \qquad
 \text{for \(0\leq z\leq R\)}.
-\label{eq:hyper-elliptical-proof-scalar}
-\end{align}
+\end{aligned}
+\end{equation}
 The last row is equivalent to \(g(z)\leq g(R)\).
 
 Applying this scalar bound eigenvalue by eigenvalue gives
-\begin{align}
+\begin{equation}
 \label{eq:hyper-elliptical-proof-logdet-deff}
+\begin{aligned}
 \log\det(I+M)
 &=
 \sum_{i=1}^{d}\log(1+\nu_i)
@@ -7092,7 +7248,8 @@ c(R)\sum_{i=1}^{d}\frac{\nu_i}{1+\nu_i}
 \\
 &=
 c(R)d_{\mathrm{eff}}(\Omega;X).
-\end{align}
+\end{aligned}
+\end{equation}
 
 Combining \eqref{eq:hyper-elliptical-proof-first} and \eqref{eq:hyper-elliptical-proof-logdet-deff} proves
 \begin{equation}
@@ -7103,7 +7260,9 @@ Combining \eqref{eq:hyper-elliptical-proof-first} and \eqref{eq:hyper-elliptical
 \end{equation}
 
 It remains to bound \(R\).  Since \(M\succeq 0\),
-\begin{align}
+\begin{equation}
+\label{eq:hyper-elliptical-proof-R}
+\begin{aligned}
 R
 &\,\leq\,
 \operatorname{tr}(M)
@@ -7116,19 +7275,20 @@ R
 \sum_{s=1}^{n}
 x_s^\top\Omega x_s
 \,\leq\,
-\frac{nL_{\Omega}^2}{\lambda},
-\label{eq:hyper-elliptical-proof-R}
-\\
+\frac{nL_{\Omega}^2}{\lambda}.
+\end{aligned}
+\end{equation}
+\begin{equation}
+\label{eq:hyper-elliptical-proof-logT}
+\begin{aligned}
 c(R)
 &\,\leq\,
-1+\log(1+R),
-\label{eq:hyper-elliptical-proof-cR-bound}
+1+\log(1+R)
 \\
-c(R)
 &\,\leq\,
 1+\log\!\left(1+\frac{nL_{\Omega}^2}{\lambda}\right).
-\label{eq:hyper-elliptical-proof-logT}
-\end{align}
+\end{aligned}
+\end{equation}
 
 The claimed logarithmic bound follows.
 \end{proof}
@@ -7171,14 +7331,16 @@ L_{\Omega}^{2}.
 The archive uses the predictable birth-order slots of
 Lemma~\ref{lem:predictable}. Its realized candidate designs obey the
 deterministic cap
-\begin{align}
+\begin{equation}
+\label{eq:hyper-oracle-deff-cap}
+\begin{aligned}
 \max_{1\le s\le T+1}\max_{a\in\mathcal A_T(U)}
 d_{\mathrm{eff}}(\Omega;X_{a,s})
 &\,\leq\,
 \bar d_{\mathrm{eff},T}(\Omega)
 \quad\text{almost surely}.
-\label{eq:hyper-oracle-deff-cap}
-\end{align}
+\end{aligned}
+\end{equation}
 For \(\delta\in(0,1)\), define
 \begin{align}
 c_T^\Omega
@@ -7281,7 +7443,9 @@ filled. For each of the at most \(K_{\max}\) slots, apply
 Lemma~\ref{lem:hyper-sn} with failure probability
 \(\delta/K_{\max}\). For every realized slot and every \(t\le T\), the
 determinant calculation in Lemma~\ref{lem:hyper-elliptical} gives
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-det-cap}
+\begin{aligned}
 \log
 \frac{\det(V_{a,t}^{\Omega})}
 {\det(\lambda\Omega^{-1})}
@@ -7290,8 +7454,8 @@ c_T^\Omega d_{\mathrm{eff}}(\Omega;X_{a,t})
 \\
 &\,\leq\,
 c_T^\Omega\bar d_{\mathrm{eff},T}(\Omega).
-\label{eq:hyper-deff-proof-det-cap}
-\end{align}
+\end{aligned}
+\end{equation}
 Thus the confidence radius in Lemma~\ref{lem:hyper-sn}, with
 \(\delta/K_{\max}\) in place of \(\delta\), is at most
 \(\alpha_{\Omega,T}(\delta)\). A union bound over the slots defines an event
@@ -7325,52 +7489,51 @@ q_t\,\coloneqq\,q_t(a_t).
 \end{align}
 
 The confidence bounds and the router's UCB choice give the single chain
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-oracle-ucb}
+\begin{aligned}
 x_t(a_t^\star)^\top\theta_{a_t^\star}
 &\,\leq\,
 x_t(a_t^\star)^\top\widehat{\theta}_{a_t^\star,t}^{\Omega}
 +\alpha_{\Omega,T}(\delta)\sqrt{q_t(a_t^\star)}
-\label{eq:hyper-deff-proof-oracle-ucb}
 \\
 &\,\leq\,
 x_t(a_t)^\top\widehat{\theta}_{a_t,t}^{\Omega}
-+\alpha_{\Omega,T}(\delta)\sqrt{q_t},
-\label{eq:hyper-deff-proof-argmax}
++
+\alpha_{\Omega,T}(\delta)\sqrt{q_t}
 \\
-x_t(a_t)^\top\widehat{\theta}_{a_t,t}^{\Omega}
 &\,\leq\,
 x_t(a_t)^\top\theta_{a_t}
-+\alpha_{\Omega,T}(\delta)\sqrt{q_t}.
-\label{eq:hyper-deff-proof-selected-lcb}
-\end{align}
-Combining these rows with the definition of \(L_t(U)\), then using bounded
++2\alpha_{\Omega,T}(\delta)\sqrt{q_t}.
+\end{aligned}
+\end{equation}
+Subtracting \(x_t(a_t)^\top\theta_{a_t}\), then using bounded
 rewards and \(\alpha_{\Omega,T}(\delta)\geq1\), yields
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-sum-gap}
+\begin{aligned}
 L_t(U)
 &\,\leq\,
 2\alpha_{\Omega,T}(\delta)\sqrt{q_t},
-\label{eq:hyper-deff-proof-gap-width}
 \\
 0
 &\,\leq\,
 L_t(U)
 \,\leq\,
 1,
-\label{eq:hyper-deff-proof-gap-one}
 \\
 L_t(U)
 &\,\leq\,
 \min\{1,2\alpha_{\Omega,T}(\delta)\sqrt{q_t}\}
 \,\leq\,
 2\alpha_{\Omega,T}(\delta)\min\{1,\sqrt{q_t}\},
-\label{eq:hyper-deff-proof-minwidth}
 \\
 \sum_{t=1}^{T}L_t(U)
 &\,\leq\,
 2\alpha_{\Omega,T}(\delta)
 \sum_{t=1}^{T}\min\{1,\sqrt{q_t}\}.
-\label{eq:hyper-deff-proof-sum-gap}
-\end{align}
+\end{aligned}
+\end{equation}
 
 Partition the selected rounds by candidate. Let \(n_a\) be the number of
 selections of \(a\), and let \(q_{a,s}\) be its uncertainty at its \(s\)-th
@@ -7389,14 +7552,15 @@ x_{a,s}.
 \label{eq:hyper-deff-proof-qas}
 \end{align}
 Then Cauchy--Schwarz gives
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-cauchy}
+\begin{aligned}
 \sum_{t=1}^{T}
 \min\{1,\sqrt{q_t}\}
 &\,=\,
 \sum_{a\in\mathcal A_T(U)}
 \sum_{s=1}^{n_a}
 \min\{1,\sqrt{q_{a,s}}\}
-\label{eq:hyper-deff-proof-partition}
 \\
 &\,\leq\,
 \sqrt{
@@ -7417,10 +7581,12 @@ T
 \sum_{s=1}^{n_a}
 \min\{1,q_{a,s}\}
 }.
-\label{eq:hyper-deff-proof-cauchy}
-\end{align}
+\end{aligned}
+\end{equation}
 Lemma~\ref{lem:hyper-elliptical} applied separately to each candidate yields
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-elliptical-per-arm}
+\begin{aligned}
 \sum_{s=1}^{n_a}
 \min\{1,q_{a,s}\}
 &\,\leq\,
@@ -7432,18 +7598,21 @@ d_{\mathrm{eff}}(\Omega;X_{a,T+1})
 \\
 &\,\leq\,
 2c_T^\Omega\bar d_{\mathrm{eff},T}(\Omega),
-\label{eq:hyper-deff-proof-elliptical-per-arm}
-\\
+\end{aligned}
+\end{equation}
+\begin{equation}
+\label{eq:hyper-deff-proof-total-potential}
 \sum_{a\in\mathcal A_T(U)}
 \sum_{s=1}^{n_a}
 \min\{1,q_{a,s}\}
-&\,\leq\,
+\;\leq\,
 2K_{\max}c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega).
-\label{eq:hyper-deff-proof-total-potential}
-\end{align}
+\end{equation}
 Substituting \eqref{eq:hyper-deff-proof-total-potential} into \eqref{eq:hyper-deff-proof-cauchy} and then into \eqref{eq:hyper-deff-proof-sum-gap} proves
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-pathwise}
+\begin{aligned}
 \sum_{t=1}^{T}L_t(U)
 &\,\leq\,
 2\alpha_{\Omega,T}(\delta)
@@ -7451,10 +7620,12 @@ Substituting \eqref{eq:hyper-deff-proof-total-potential} into \eqref{eq:hyper-de
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
-\label{eq:hyper-deff-proof-pathwise}
-\end{align}
+\end{aligned}
+\end{equation}
 This is \eqref{eq:hyper-deff-bound-pathwise}.  Taking expectations and splitting on \(\mathcal{E}_{\Omega}\) gives
-\begin{align}
+\begin{equation}
+\label{eq:hyper-deff-proof-expectation-split}
+\begin{aligned}
 \sum_{t=1}^{T}\mathbb{E}[L_t(U)]
 &\,=\,
 \mathbb{E}
@@ -7476,8 +7647,8 @@ This is \eqref{eq:hyper-deff-bound-pathwise}.  Taking expectations and splitting
 \bar d_{\mathrm{eff},T}(\Omega)
 }
 +\delta T .
-\label{eq:hyper-deff-proof-expectation-split}
-\end{align}
+\end{aligned}
+\end{equation}
 This is \eqref{eq:hyper-deff-bound-expectation}. For fixed problem
 parameters, \(c_T^\Omega=O(\log T)\) and
 \(\alpha_{\Omega,T}(\delta)=O(\sqrt{\log T})\) for either fixed \(\delta\)
@@ -7611,7 +7782,9 @@ V_{a,t}^{\Omega}.
 \begin{proof}
 The definition of \(\rho_{\Omega,T}\), followed by adding \(I\), congruence by
 \(\Omega^{1/2}\), and order-reversing inversion, gives
-\begin{align}
+\begin{equation}
+\label{eq:hyper-perturb-proof-inv}
+\begin{aligned}
 -\varepsilon I
 &\,\preceq\,
 \Omega^{-1/2}
@@ -7621,31 +7794,30 @@ The definition of \(\rho_{\Omega,T}\), followed by adding \(I\), congruence by
 \Omega^{-1/2}
 \,\preceq\,
 \varepsilon I .
-\label{eq:hyper-perturb-proof-relative}
 \\
 (1-\varepsilon)I
 &\,\preceq\,
 \Omega^{-1/2}\widehat{\Omega}_t\Omega^{-1/2}
 \,\preceq\,
 (1+\varepsilon)I .
-\label{eq:hyper-perturb-proof-addI}
 \\
 (1-\varepsilon)\Omega
 &\,\preceq\,
 \widehat{\Omega}_t
 \,\preceq\,
 (1+\varepsilon)\Omega .
-\label{eq:hyper-perturb-proof-omega}
 \\
 \frac{1}{1+\varepsilon}\Omega^{-1}
 &\,\preceq\,
 \widehat{\Omega}_t^{-1}
 \,\preceq\,
 \frac{1}{1-\varepsilon}\Omega^{-1}.
-\label{eq:hyper-perturb-proof-inv}
-\end{align}
+\end{aligned}
+\end{equation}
 Substituting the lower inverse bound into the design matrix gives
-\begin{align}
+\begin{equation}
+\label{eq:hyper-perturb-proof-V}
+\begin{aligned}
 V_{a,t}^{\widehat{\Omega}}
 &\,=\,
 X_{a,t}^{\top}X_{a,t}
@@ -7665,8 +7837,8 @@ X_{a,t}^{\top}X_{a,t}
 &\,=\,
 \frac{1}{1+\varepsilon}
 V_{a,t}^{\Omega}.
-\label{eq:hyper-perturb-proof-V}
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 \begin{lemma}[Width and effective-dimension stability]
@@ -7695,12 +7867,13 @@ d_{\mathrm{eff}}(\Omega;X).
 \begin{proof}
 From \eqref{eq:hyper-perturb-V-lower}, inversion, quadratic-form monotonicity,
 and trace monotonicity with \(A=X^\top X\succeq0\) give
-\begin{align}
+\begin{equation}
+\label{eq:hyper-perturb-width-proof-qf}
+\begin{aligned}
 \left(V_{a,t}^{\widehat{\Omega}}\right)^{-1}
 &\,\preceq\,
 (1+\varepsilon)
 \left(V_{a,t}^{\Omega}\right)^{-1}.
-\label{eq:hyper-perturb-width-proof-inv}
 \\
 x^\top
 \left(V_{a,t}^{\widehat{\Omega}}\right)^{-1}
@@ -7710,13 +7883,11 @@ x
 x^\top
 \left(V_{a,t}^{\Omega}\right)^{-1}
 x .
-\label{eq:hyper-perturb-width-proof-qf}
-\\
-A
-&\,\coloneqq\,
-X^\top X,
-\label{eq:hyper-perturb-deff-proof-A}
-\\
+\end{aligned}
+\end{equation}
+\begin{equation}
+\label{eq:hyper-perturb-deff-proof}
+\begin{aligned}
 d_{\mathrm{eff}}(\widehat{\Omega}_t;X)
 &\,=\,
 \operatorname{tr}
@@ -7740,8 +7911,8 @@ A+\lambda\Omega^{-1}
 &\,=\,
 (1+\varepsilon)
 d_{\mathrm{eff}}(\Omega;X).
-\label{eq:hyper-perturb-deff-proof}
-\end{align}
+\end{aligned}
+\end{equation}
 \end{proof}
 
 The spectral comparison controls confidence widths. A regret statement also
@@ -7805,21 +7976,24 @@ expected cumulative exploration cost.
 \begin{proof}
 Lemma~\ref{lem:hyper-perturb-width} and
 \(\min\{1,cz\}\leq c\min\{1,z\}\) for \(c\geq1\) give
-\begin{align}
+\begin{equation}
+\label{eq:hyper-est-proof-width}
+\begin{aligned}
 \widehat w_t
 &\,\leq\,
 \sqrt{1+\varepsilon}\,w_t^\Omega,
-\label{eq:hyper-est-proof-width}
 \\
 \left[\widehat w_t-w_t^\Omega\right]_+
 &\,\leq\,
 \left(\sqrt{1+\varepsilon}-1\right)
 w_t^\Omega.
-\label{eq:hyper-est-proof-min-diff}
-\end{align}
+\end{aligned}
+\end{equation}
 The definition of \(\operatorname{WidthErr}_T\) and the oracle width-sum bound
 from the proof of Proposition~\ref{prop:deff-bound-app} now give
-\begin{align}
+\begin{equation}
+\label{eq:hyper-est-proof-err}
+\begin{aligned}
 \operatorname{WidthErr}_T(\widehat{\Omega},\Omega)
 &\,\leq\,
 2\widetilde\alpha_T
@@ -7833,12 +8007,13 @@ from the proof of Proposition~\ref{prop:deff-bound-app} now give
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
-\label{eq:hyper-est-proof-err}
-\end{align}
+\end{aligned}
+\end{equation}
 
 On \(\mathcal E_{\mathrm{conf}}(\widehat\Omega)\), the same UCB argument and
 the first row above yield
-\begin{align*}
+\begin{equation*}
+\begin{aligned}
 L_t(U)
 &\,\leq\,
 2\widetilde\alpha_T
@@ -7857,7 +8032,8 @@ L_t(U)
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
-\end{align*}
+\end{aligned}
+\end{equation*}
 This is \eqref{eq:hyper-est-prop-total-bound}. On the complement of an event
 with probability \(1-\eta\), bounded rewards give
 \(\sum_{t=1}^T L_t(U)\leq T\), which adds \(\eta T\) in expectation.
@@ -7942,7 +8118,8 @@ Algorithm~\ref{alg:hyper-ridge}.
 Let \(\Omega\succ0\). The calibration phase uses \(N\) candidates and collects
 \(m\) rewards per candidate under an exogenous uniform-routing policy. For
 \(i\in\{1,\ldots,N\}\) and \(j\in\{1,\ldots,m\}\), define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 z_{i,j}
 &\,=\,
 \Omega^{1/2}x_{i,j},
@@ -7954,7 +8131,8 @@ x_{i,1}^{\top}\\
 \vdots\\
 x_{i,m}^{\top}
 \end{bmatrix}.
-\end{align}
+\end{aligned}
+\end{equation}
 The arrays \(X_1,\ldots,X_N\) are independent. Within block \(i\), the
 vectors \(z_{i,1},\ldots,z_{i,m}\) are independent and, for deterministic
 \(\kappa_{\rm cal}>0\) and \(L_{\rm cal}<\infty\),
@@ -7977,7 +8155,8 @@ The effects \(\theta_1,\ldots,\theta_N\) are i.i.d. and satisfy
 \quad\text{almost surely}.
 \end{equation}
 The reward and centered response are
-\begin{align}
+\begin{equation}
+\begin{aligned}
 r_{i,j}
 &\,=\,
 b(u_{i,j})+x_{i,j}^{\top}\theta_i+\xi_{i,j},
@@ -7985,7 +8164,8 @@ b(u_{i,j})+x_{i,j}^{\top}\theta_i+\xi_{i,j},
 y_{i,j}
 &\,=\,
 r_{i,j}-b(u_{i,j}).
-\end{align}
+\end{aligned}
+\end{equation}
 
 Conditional on the full feature array, the pairs
 \((\theta_i,\xi_i)\), with
@@ -8023,7 +8203,8 @@ Moreover, there exists such a \(1/4\)-net with cardinality at most \(9^d\).
 Set \(M=\sup_{v\in\mathcal N}|v^\top Av|\). For any
 \(u\in\mathbb S^{d-1}\), choose \(v\in\mathcal N\) with
 \(\|u-v\|_2\leq1/4\). Symmetry gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 |u^\top Au-v^\top Av|
 &\,=\,
 |(u-v)^\top Au+v^\top A(u-v)|
@@ -8032,7 +8213,8 @@ Set \(M=\sup_{v\in\mathcal N}|v^\top Av|\). For any
 2\|u-v\|_2\|A\|_{\rm op}
 \,\leq\,
 \tfrac12\|A\|_{\rm op}.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus \(|u^\top Au|\leq M+\|A\|_{\rm op}/2\). Taking the supremum over
 \(u\) and using
 \(\|A\|_{\rm op}=\sup_{\|u\|_2=1}|u^\top Au|\) gives
@@ -8089,12 +8271,14 @@ with the same deterministic value of \(K\).
 \begin{proof}
 Fix \(u\in\mathbb S^{d-1}\). Chernoff's method, applied also to \(-u\),
 gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \Pr(|u^\top Z_i|\ge t)
 &\,\leq\,
 2\exp\!\left(-\frac{t^2}{2K^2}\right)
 \qquad t\ge0.
-\end{align}
+\end{aligned}
+\end{equation}
 Equivalently, \(u^\top Z_i\) is sub-Gaussian with sub-Gaussian norm bounded by
 a universal multiple of \(K\). Lemma 2.7.7 of Vershynin,
 \emph{High-Dimensional Probability}, Cambridge University Press, 2018, shows
@@ -8183,7 +8367,8 @@ m
 \log\!\left(\frac{dN}{\delta_{\rm gram}}\right),
 \end{equation}
 then, with probability at least \(1-\delta_{\rm gram}\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 H_i\succeq \frac{\kappa_{\rm cal}m}{2}I_d
 &\qquad(i=1,\ldots,N),
 \\
@@ -8191,7 +8376,8 @@ H_i\succeq \frac{\kappa_{\rm cal}m}{2}I_d
 &\leq
 \frac{2}{\kappa_{\rm cal}m}
 &&\qquad(i=1,\ldots,N).
-\end{align}
+\end{aligned}
+\end{equation}
 Every \(G_i\) is invertible on this event.
 \end{lemma}
 
@@ -8239,7 +8425,8 @@ On this event,
 \end{equation}
 Thus \(G_i\) is invertible. Inverting the Loewner inequality and identifying
 the inverse give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 (\Omega^{1/2}G_i\Omega^{1/2})^{-1}
 &\preceq
 \frac{2}{\kappa_{\rm cal}m}I_d,
@@ -8247,7 +8434,8 @@ the inverse give
 (\Omega^{1/2}G_i\Omega^{1/2})^{-1}
 &=
 \Omega^{-1/2}G_i^{-1}\Omega^{-1/2},
-\end{align}
+\end{aligned}
+\end{equation}
 the asserted operator-norm bound follows.
 \end{proof}
 
@@ -8276,7 +8464,8 @@ r_{i,m}-b(u_{i,m})
 X_i\theta_i+\xi_i,
 \end{equation}
 and
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widetilde\theta_i
 &\,=\,
 G_i^{-1}X_i^\top y_i,
@@ -8292,7 +8481,8 @@ Z_i
 K_m^2
 &\,=\,
 S_\Omega^2+\tau_m.
-\end{align}
+\end{aligned}
+\end{equation}
 Then, conditional on the feature array, \(Z_1,\ldots,Z_N\) are independent
 mean-zero random vectors.  Moreover,
 \begin{equation}
@@ -8314,16 +8504,19 @@ and, for every \(u\in\mathbb{S}^{d-1}\) and every \(s\in\mathbb{R}\),
 
 \begin{proof}
 The least-squares identity gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widetilde\theta_i
 &\,=\,
 G_i^{-1}X_i^\top(X_i\theta_i+\xi_i)
 \\
 &\,=\,
 \theta_i+G_i^{-1}X_i^\top\xi_i.
-\end{align}
+\end{aligned}
+\end{equation}
 Set
-\begin{align}
+\begin{equation}
+\begin{aligned}
 U_i
 &\,=\,
 \Omega^{-1/2}\theta_i,
@@ -8335,7 +8528,8 @@ U_i+E_i,
 E_i
 &\,=\,
 \Omega^{-1/2}G_i^{-1}X_i^\top\xi_i.
-\end{align}
+\end{aligned}
+\end{equation}
 The random-effects assumptions imply, conditional on the full calibration
 feature array,
 \begin{equation}
@@ -8391,7 +8585,8 @@ v^\top R_i v
 \end{equation}
 For \(j<k\), the random variable \(\xi_{i,j}\) is
 \(\mathcal{H}_{i,k-1}\)-measurable.  Hence
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}[\xi_{i,j}\xi_{i,k}\mid X_{1:N}]
 &\,=\,
 \mathbb{E}\!\left[
@@ -8402,7 +8597,8 @@ For \(j<k\), the random variable \(\xi_{i,j}\) is
 \\
 &\,=\,
 0.
-\end{align}
+\end{aligned}
+\end{equation}
 The conditional sub-Gaussian inequality also implies
 \(\mathbb{E}[\xi_{i,j}^2\mid\mathcal{H}_{i,j-1}]\leq\sigma^2\). To see
 this, average the MGF bounds at \(h\) and \(-h\):
@@ -8415,7 +8611,8 @@ this, average the MGF bounds at \(h\) and \(-h\):
 \end{equation}
 Conditional Fatou's lemma and
 \(2(\cosh(hx)-1)/h^2\to x^2\) yield
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb E\!\left[
 \xi_{i,j}^2\mid\mathcal H_{i,j-1}
 \right]
@@ -8428,9 +8625,11 @@ Conditional Fatou's lemma and
 \\
 &=
 \sigma^2.
-\end{align}
+\end{aligned}
+\end{equation}
 The zero cross-covariances and variance bound now give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 v^\top R_i v
 &\leq
 \sigma^2\|b_i\|_2^2,
@@ -8441,7 +8640,8 @@ v^\top\Omega^{-1/2}G_i^{-1}X_i^\top X_iG_i^{-1}\Omega^{-1/2}v
 \\
 &=
 v^\top\Omega^{-1/2}G_i^{-1}\Omega^{-1/2}v.
-\end{align}
+\end{aligned}
+\end{equation}
 On the conditioned Gram event,
 \begin{equation}
 \Omega^{-1/2}G_i^{-1}\Omega^{-1/2}
@@ -8476,14 +8676,16 @@ For the noise part, set
 \(b_i=X_iG_i^{-1}\Omega^{-1/2}u\), which is deterministic conditional on the
 full feature array. Iterating the
 conditional sub-Gaussian inequality over \(j=m,m-1,\ldots,1\) gives
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}\!\left[
 \exp(sb_i^\top\xi_i)
 \mid X_{1:N},\theta_i
 \right]
 \leq
 \exp\!\left(\frac{s^2\sigma^2\|b_i\|_2^2}{2}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 The Gram-event calculation above gives
 \(\|b_i\|_2^2\leq2/(\kappa_{\rm cal}m)\). Therefore,
 \begin{equation}
@@ -8495,7 +8697,8 @@ The Gram-event calculation above gives
 \exp\!\left(\frac{s^2\tau_m}{2}\right).
 \end{equation}
 Since \(U_i\) is a function of \(\theta_i\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathbb{E}\!\left[
 \exp(su^\top Z_i)\mid X_{1:N}
 \right]
@@ -8517,7 +8720,8 @@ Since \(U_i\) is a function of \(\theta_i\),
 \\
 &\,\leq\,
 \exp\!\left(\frac{s^2(S_\Omega^2+\tau_m)}{2}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 
 Finally, Assumption~\ref{ass:exogenous-uniform-calibration-diversity-final}
 makes the pairs \((\theta_i,\xi_i)\) independent across \(i\), conditional on
@@ -8556,7 +8760,8 @@ m
 \log\!\left(\frac{dN}{\delta_{\rm gram}}\right).
 \end{equation}
 Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \varepsilon_{\rm cov}(N,m,\gamma,\delta_{\rm cov})
 &\,=\,
 C_{\rm cov}K_m^2\left[
@@ -8564,13 +8769,14 @@ C_{\rm cov}K_m^2\left[
 +
 \frac{d+\log(2/\delta_{\rm cov})}{N}
 \right]
-\notag\\
+\\
 &\quad
 +
 \tau_m
 +
 \gamma\|\Omega^{-1}\|_{\mathrm{op}}.
-\end{align}
+\end{aligned}
+\end{equation}
 Then, with probability at least \(1-\delta_{\rm gram}-\delta_{\rm cov}\),
 \begin{equation}
 \left\|
@@ -8618,7 +8824,8 @@ and, for every \(u\in\mathbb{S}^{d-1}\) and \(s\in\mathbb{R}\),
 The conditional form of
 Lemma~\ref{lem:err-control-independent-subg-cov-final} therefore gives an
 event of conditional probability at least \(1-\delta_{\rm cov}\) on which
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \left\|
 \frac1N\sum_{i=1}^N
 \left[
@@ -8626,14 +8833,18 @@ Z_iZ_i^\top-\mathbb{E}(Z_iZ_i^\top\mid X_{1:N})
 \right]
 \right\|_{\mathrm{op}}
 &\,\leq\,
-C_{\rm cov}K_m^2\left[
+C_{\rm cov}K_m^2\Biggl[
 \sqrt{\frac{d+\log(2/\delta_{\rm cov})}{N}}
+\\
+&\qquad
 +
 \frac{d+\log(2/\delta_{\rm cov})}{N}
-\right].
-\end{align}
+\Biggr].
+\end{aligned}
+\end{equation}
 On the intersection of this event and \(\mathcal{E}_{\rm gram}\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \left\|
 \frac1N\sum_{i=1}^N Z_iZ_i^\top-I_d
 \right\|_{\mathrm{op}}
@@ -8653,7 +8864,8 @@ C_{\rm cov}K_m^2\left[
 +
 \frac{d+\log(2/\delta_{\rm cov})}{N}
 \right]+\tau_m.
-\end{align}
+\end{aligned}
+\end{equation}
 Here
 \begin{equation}
 \left\|\frac1N\sum_{i=1}^N R_i\right\|_{\mathrm{op}}
@@ -8663,7 +8875,8 @@ Here
 \tau_m.
 \end{equation}
 Finally,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \Omega^{-1/2}\widehat\Omega\Omega^{-1/2}
 &\,=\,
 \frac1N\sum_{i=1}^N Z_iZ_i^\top+\gamma\Omega^{-1},
@@ -8671,7 +8884,8 @@ Finally,
 \Omega^{-1/2}(\widehat\Omega-\Omega)\Omega^{-1/2}
 &\,=\,
 \left(\frac1N\sum_{i=1}^N Z_iZ_i^\top-I_d\right)+\gamma\Omega^{-1}.
-\end{align}
+\end{aligned}
+\end{equation}
 The triangle inequality gives
 \begin{equation}
 \left\|
@@ -8709,7 +8923,8 @@ post-routing conditional sub-Gaussian bound
 0\leq\varepsilon<1.
 \end{equation}
 For candidate \(a\), define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{a,t}^{\widehat\Omega}
 &\,=\,
 X_{a,t}^\top X_{a,t}+\lambda\widehat\Omega^{-1},
@@ -8717,9 +8932,11 @@ X_{a,t}^\top X_{a,t}+\lambda\widehat\Omega^{-1},
 \widehat\theta_{a,t}^{\widehat\Omega}
 &\,=\,
 (V_{a,t}^{\widehat\Omega})^{-1}X_{a,t}^\top y_{a,t}.
-\end{align}
+\end{aligned}
+\end{equation}
 Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \alpha_{\widehat\Omega,T}(\varepsilon,\delta_{\rm route})
 &\,=\,
 \max\!\bigg\{
@@ -8732,7 +8949,8 @@ d\log\!\left(1+\frac{(1+\varepsilon)TL_\Omega^2}{\lambda}\right)
 +
 \sqrt{\frac{\lambda}{1-\varepsilon}}\,S_\Omega
 \bigg\}.
-\end{align}
+\end{aligned}
+\end{equation}
 Then, conditional on \(\mathcal F_0^{\rm route}\), with probability at least
 \(1-\delta_{\rm route}\), uniformly over all routing candidates \(a\), all
 \(t\le T\), and all predictable test features \(x\),
@@ -8750,7 +8968,8 @@ x^\top(\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a)
 Fix a routing candidate \(a\). Conditional on
 \(\mathcal F_0^{\rm route}\), the matrix
 \(A=\lambda\widehat\Omega^{-1}\) is deterministic and positive definite. Set
-\begin{align}
+\begin{equation}
+\begin{aligned}
 S_{a,t}
 &\,=\,
 \sum_{s\in\mathcal{T}_{a,t}}x_s(a)\xi_s,
@@ -8758,9 +8977,11 @@ S_{a,t}
 V_{a,t}^{\widehat\Omega}
 &\,=\,
 A+\sum_{s\in\mathcal{T}_{a,t}}x_s(a)x_s(a)^\top.
-\end{align}
+\end{aligned}
+\end{equation}
 The reward model and the triangle inequality give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widehat\theta_{a,t}^{\widehat\Omega}-\theta_a
 &\,=\,
 (V_{a,t}^{\widehat\Omega})^{-1}S_{a,t}
@@ -8772,9 +8993,11 @@ The reward model and the triangle inequality give
 \|S_{a,t}\|_{(V_{a,t}^{\widehat\Omega})^{-1}}
 +
 \|A\theta_a\|_{(V_{a,t}^{\widehat\Omega})^{-1}}.
-\end{align}
+\end{aligned}
+\end{equation}
 Because \(V_{a,t}^{\widehat\Omega}\succeq A\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \|A\theta_a\|_{(V_{a,t}^{\widehat\Omega})^{-1}}^2
 &\,\leq\,
 \theta_a^\top A\theta_a
@@ -8794,12 +9017,14 @@ Because \(V_{a,t}^{\widehat\Omega}\succeq A\),
 \|A\theta_a\|_{(V_{a,t}^{\widehat\Omega})^{-1}}
 &\,\leq\,
 \sqrt{\frac{\lambda}{1-\varepsilon}}\,S_\Omega.
-\end{align}
+\end{aligned}
+\end{equation}
 It remains to control the martingale term. If \(\sigma=0\), conditional
 sub-Gaussianity implies \(S_{a,t}=0\) almost surely and the claim follows from
 the bias bound. Suppose \(\sigma>0\). For fixed \(q\in\mathbb{R}^d\),
 define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 M_t(q)
 &\,=\,
 \exp\!\left(
@@ -8821,14 +9046,16 @@ q
 &\,\leq\,
 1
 \quad\text{when round \(t\) selects \(a\)}.
-\end{align}
+\end{aligned}
+\end{equation}
 If round \(t\) does not select \(a\), then \(S_{a,t}\) and
 \(V_{a,t}^{\widehat\Omega}\) do not change. Therefore
 \((M_t(q))_{t\le T}\) is a nonnegative supermartingale with initial value one.
 
 Let \(Q\) be Gaussian with precision \(A\). Its density and the corresponding
 mixture process are
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \varphi_A(q)
 &\,=\,
 \frac{\det(A)^{1/2}}{(2\pi)^{d/2}}
@@ -8837,12 +9064,14 @@ mixture process are
 \mathcal{M}_t
 &\,=\,
 \int_{\mathbb{R}^d} M_t(q)\,\varphi_A(q)\,dq.
-\end{align}
+\end{aligned}
+\end{equation}
 Tonelli's theorem and the supermartingale property of \(M_t(q)\) imply that
 \((\mathcal{M}_t)_{t\le T}\) is a nonnegative supermartingale with
 \(\mathcal{M}_0=1\). Completing the square and then applying Ville's inequality
 give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathcal{M}_t
 &\,=\,
 \frac{\det(A)^{1/2}}{\det(V_{a,t}^{\widehat\Omega})^{1/2}}
@@ -8864,11 +9093,13 @@ give
 \right)
 }
 \quad\text{uniformly over \(t\leq T\)}.
-\end{align}
+\end{aligned}
+\end{equation}
 The last row holds with probability at least \(1-\delta_a\).
 To bound its determinant ratio, use \(A=\lambda\widehat\Omega^{-1}\) and
 \(\widehat\Omega\preceq(1+\varepsilon)\Omega\):
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \frac{\det(V_{a,t}^{\widehat\Omega})}{\det(A)}
 &\,=\,
 \det\!\left(
@@ -8886,10 +9117,12 @@ I+\lambda^{-1}\widehat\Omega^{1/2}X_{a,t}^\top X_{a,t}\widehat\Omega^{1/2}
 \sum_{s\in\mathcal{T}_{a,t}}x_s(a)^\top\Omega x_s(a)
 \,\leq\,
 \frac{(1+\varepsilon)TL_\Omega^2}{\lambda}.
-\end{align}
+\end{aligned}
+\end{equation}
 For any positive-semidefinite \(d\times d\) matrix \(M\) with eigenvalues
 \(\nu_1,\ldots,\nu_d\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \det(I+M)
 &\,=\,
 \prod_{k=1}^d(1+\nu_k)
@@ -8906,11 +9139,13 @@ For any positive-semidefinite \(d\times d\) matrix \(M\) with eigenvalues
 d\log\!\left(1+\frac{(1+\varepsilon)TL_\Omega^2}{\lambda}\right)
 +
 2\log(1/\delta_a).
-\end{align}
+\end{aligned}
+\end{equation}
 Taking \(\delta_a=\delta_{\rm route}/K_{\max}\) and applying a union bound over
 the fixed routing archive gives, with probability at least
 \(1-\delta_{\rm route}\), the simultaneous bound
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \|\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a\|_{V_{a,t}^{\widehat\Omega}}
 &\,\leq\,
 \alpha_{\widehat\Omega,T}(\varepsilon,\delta_{\rm route})
@@ -8921,7 +9156,8 @@ x^\top(\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a)
 &\,\leq\,
 \|\widehat\theta_{a,t}^{\widehat\Omega}-\theta_a\|_{V_{a,t}^{\widehat\Omega}}
 \sqrt{x^\top(V_{a,t}^{\widehat\Omega})^{-1}x}.
-\end{align}
+\end{aligned}
+\end{equation}
 The two rows hold for every candidate \(a\), every \(t\leq T\), and every
 predictable test feature \(x\). The second row is Cauchy--Schwarz in the
 \(V_{a,t}^{\widehat\Omega}\)-inner product.
@@ -8951,7 +9187,8 @@ x_{i,j}^{\top}\theta_i+\xi_{i,j},
 \qquad j=1,\ldots,m.
 \end{equation}
 Let
-\begin{align}
+\begin{equation}
+\begin{aligned}
 X_i
 &\,=\,
 \begin{bmatrix}
@@ -8970,9 +9207,11 @@ X_i^\top X_i,
 G_i^{-1}X_i^\top y_i, & G_i\text{ invertible},\\
 0, & \text{otherwise}.
 \end{cases}
-\end{align}
+\end{aligned}
+\end{equation}
 For a deterministic ridge floor \(\gamma=\gamma_T>0\), define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \widehat\Omega
 &\,=\,
 \frac1N\sum_{i=1}^N\widetilde\theta_i\widetilde\theta_i^\top+\gamma I_d.
@@ -8981,7 +9220,8 @@ For a deterministic ridge floor \(\gamma=\gamma_T>0\), define
 &\,=\,
 \widehat\Omega,
 \qquad t=1,\ldots,T.
-\end{align}
+\end{aligned}
+\end{equation}
 The post-calibration routing archive is fixed before routing begins and has
 cardinality at most \(K_{\max}\).  The routing UCB rule uses
 \begin{equation}
@@ -8996,7 +9236,8 @@ Lemma~\ref{lem:confidence-under-frozen-omegahat-final}, and where
 Assume Assumption~\ref{ass:exogenous-uniform-calibration-diversity-final} and
 the post-calibration routing assumptions of
 Assumption~\ref{assump:shared-structure-app}.  Let
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \tau_m
 &\,=\,
 \frac{2\sigma^2}{\kappa_{\rm cal}m},
@@ -9009,10 +9250,12 @@ m
 &\,\geq\,
 \frac{8L_{\rm cal}^2}{\kappa_{\rm cal}}
 \log\!\left(\frac{dN}{\delta_{\rm gram}}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 Here
 \(\delta_{\rm gram},\delta_{\rm cov},\delta_{\rm route}\in(0,1)\). Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \varepsilon_*
 &\,=\,
 C_{\rm cov}K_m^2\left[
@@ -9020,13 +9263,14 @@ C_{\rm cov}K_m^2\left[
 +
 \frac{d+\log(2/\delta_{\rm cov})}{N}
 \right]
-\notag\\
+\\
 &\quad
 +
 \tau_m
 +
 \gamma\|\Omega^{-1}\|_{\mathrm{op}}.
-\end{align}
+\end{aligned}
+\end{equation}
 Computing this radius requires supplied deterministic bounds for
 \(S_\Omega,\sigma,\kappa_{\rm cal},L_{\rm cal},L_\Omega\), and
 \(\|\Omega^{-1}\|_{\rm op}\). Without them, the certificate is oracle-tuned.
@@ -9035,7 +9279,8 @@ post-calibration archive, and the latent parameter of every routing candidate.
 Assume the post-routing conditional sub-Gaussian
 bound holds after this sigma-field is added to the routing filtration, and
 assume \(\varepsilon_*<1\). Define
-\begin{align}
+\begin{equation}
+\begin{aligned}
 c_T^\Omega
 &\,=\,
 1+\log\!\left(1+\frac{TL_\Omega^2}{\lambda}\right),
@@ -9047,7 +9292,8 @@ B_{T,0}^{\rm cal}
 2K_{\max}T\,c_T^\Omega
 \bar d_{\mathrm{eff},T}(\Omega)
 }.
-\end{align}
+\end{aligned}
+\end{equation}
 Then, with probability at least
 \(1-\delta_{\rm gram}-\delta_{\rm cov}\),
 \begin{equation}
@@ -9072,7 +9318,8 @@ With probability at least
 \end{equation}
 Define the uncharged and charged remainder terms and record the resulting
 expectation bounds:
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \operatorname{Rem}_T^{\rm cal}
 &\,=\,
 \left(\sqrt{1+\varepsilon_*}-1\right)B_{T,0}^{\rm cal}
@@ -9094,13 +9341,15 @@ Nm+\operatorname{Rem}_T^{\rm cal}.
 B_{T,0}^{\rm cal}
 +
 \operatorname{Rem}_T^{\rm charged}.
-\end{align}
+\end{aligned}
+\end{equation}
 The last two rows assign each of the \(Nm\) calibration pulls a worst-case unit
 opportunity-cost charge. For fixed
 \(d,K_{\max},S_\Omega,\sigma,\kappa_{\rm cal},L_{\rm cal},L_\Omega,\lambda\),
 and \(\|\Omega^{-1}\|_{\mathrm{op}}\), and uniformly bounded
 \(\bar d_{\mathrm{eff},T}(\Omega)\), take
-\begin{align}
+\begin{equation}
+\begin{aligned}
 N
 &\,=\,
 \lceil T^{1/5}\rceil,
@@ -9120,9 +9369,11 @@ T^{-1/5},
 \delta_{\rm route}
 \,=\,
 T^{-2}.
-\end{align}
+\end{aligned}
+\end{equation}
 For all sufficiently large \(T\), the resulting rates are
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \varepsilon_*
 &\,<\,
 1,
@@ -9146,7 +9397,8 @@ O\!\left(
 O\!\left(T^{2/5}(\log T)^{3/2}\right)
 \,=\,
 o(\sqrt{T}).
-\end{align}
+\end{aligned}
+\end{equation}
 The same rate holds for
 \(\operatorname{Rem}_T^{\rm charged}\).
 \end{theorem}
@@ -9154,7 +9406,8 @@ The same rate holds for
 \begin{proof}
 Because \(\widehat\Omega_t=\widehat\Omega\) for every post-calibration routing
 round, Lemma~\ref{lem:relative-covariance-error-final} gives the event
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \mathcal{E}_{\rm cov}
 &\,\coloneqq\,
 \left\{
@@ -9167,7 +9420,8 @@ round, Lemma~\ref{lem:relative-covariance-error-final} gives the event
 \Pr(\mathcal E_{\rm cov})
 &\,\geq\,
 1-\delta_{\rm gram}-\delta_{\rm cov}.
-\end{align}
+\end{aligned}
+\end{equation}
 On \(\mathcal E_{\rm cov}\), \(\rho_{\Omega,T}\leq\varepsilon_*\), and
 \begin{equation}
 (1-\varepsilon_*)\Omega
@@ -9207,21 +9461,23 @@ w_{a,t}^{\widehat\Omega}
 \sqrt{x_t(a)^\top(V_{a,t}^{\widehat\Omega})^{-1}x_t(a)}.
 \end{equation}
 The confidence event and the UCB choice of \(a_t\) yield
-\begin{align}
+\begin{equation}
+\begin{aligned}
 x_t(a_t^\star)^\top\theta_{a_t^\star}
 &\,\leq\,
 x_t(a_t^\star)^\top
 \widehat\theta_{a_t^\star,t}^{\widehat\Omega}
 +\alpha_Tw_{a_t^\star,t}^{\widehat\Omega}
-\notag\\
+\\
 &\,\leq\,
 x_t(a_t)^\top\widehat\theta_{a_t,t}^{\widehat\Omega}
 +\alpha_Tw_{a_t,t}^{\widehat\Omega}
-\notag\\
+\\
 &\,\leq\,
 x_t(a_t)^\top\theta_{a_t}
 +2\alpha_Tw_{a_t,t}^{\widehat\Omega}.
-\end{align}
+\end{aligned}
+\end{equation}
 Thus, because \(0\leq L_t(U)\leq1\) and \(\alpha_T\geq1\),
 \begin{equation}
 L_t(U)
@@ -9230,7 +9486,8 @@ L_t(U)
 \end{equation}
 The covariance event gives
 \(\widehat\Omega^{-1}\succeq(1+\varepsilon_*)^{-1}\Omega^{-1}\). Therefore,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 V_{a,t}^{\widehat\Omega}
 &\,=\,
 X_{a,t}^\top X_{a,t}+\lambda\widehat\Omega^{-1}
@@ -9260,7 +9517,8 @@ w_{a,t}^{\Omega},
 w_{a,t}^{\Omega}
 \,\coloneqq\,
 \sqrt{x_t(a)^\top(V_{a,t}^{\Omega})^{-1}x_t(a)}.
-\end{align}
+\end{aligned}
+\end{equation}
 Since \(\min\{1,cz\}\leq c\min\{1,z\}\) for \(c\geq1\) and \(z\geq0\),
 \begin{equation}
 L_t(U)
@@ -9280,7 +9538,8 @@ Cauchy--Schwarz, and then applying the already-proved
 }.
 \end{equation}
 Thus, on \(\mathcal E\),
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sum_{t=1}^T L_t(U)
 &\,\leq\,
 \sqrt{1+\varepsilon_*}\,B_{T,0}^{\rm cal}
@@ -9289,10 +9548,12 @@ Thus, on \(\mathcal E\),
 B_{T,0}^{\rm cal}
 +
 (\sqrt{1+\varepsilon_*}-1)B_{T,0}^{\rm cal}.
-\end{align}
+\end{aligned}
+\end{equation}
 On \(\mathcal E^c\), \(0\leq L_t(U)\leq1\) gives
 \(\sum_{t=1}^T L_t(U)\leq T\). Taking expectations therefore yields
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sum_{t=1}^T\mathbb{E}[L_t(U)]
 &\,\leq\,
 B_{T,0}^{\rm cal}
@@ -9302,14 +9563,16 @@ B_{T,0}^{\rm cal}
 &\quad
 +
 (\delta_{\rm gram}+\delta_{\rm cov}+\delta_{\rm route})T.
-\end{align}
+\end{aligned}
+\end{equation}
 This is the stated bound with \(\operatorname{Rem}_T^{\rm cal}\). Under the
 declared unit opportunity-cost convention, the \(Nm\) calibration pulls add at
 most \(Nm\), giving \(\operatorname{Rem}_T^{\rm charged}\).
 
 It remains to verify the stated asymptotic schedule. With fixed problem
 constants,
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \sqrt{\frac{d+\log(2/\delta_{\rm cov})}{N}}
 &\,=\,
 O\!\left(T^{-1/10}\sqrt{\log T}\right),
@@ -9329,7 +9592,8 @@ O(T^{-1/5}),
 \varepsilon_*
 &\,=\,
 O\!\left(T^{-1/10}\sqrt{\log T}\right).
-\end{align}
+\end{aligned}
+\end{equation}
 Since \(T^{-1/10}\sqrt{\log T}\to0\), there exists \(T_0<\infty\) such that
 \(\varepsilon_*<1\) for all \(T\ge T_0\).  The Gram lower-tail condition also
 holds for all sufficiently large \(T\), because its right-hand side is
@@ -9339,7 +9603,8 @@ The explicit radius in
 Lemma~\ref{lem:confidence-under-frozen-omegahat-final}, the bound
 \(c_T^\Omega=O(\log T)\), and the uniformly bounded effective-dimension cap
 give
-\begin{align}
+\begin{equation}
+\begin{aligned}
 \alpha_T
 &\,=\,
 O(\sqrt{d\log T}),
@@ -9380,7 +9645,8 @@ O\!\left(T^{2/5}(\log T)^{3/2}\right)
 O(T^{-1})
 \,=\,
 o(\sqrt T),
-\end{align}
+\end{aligned}
+\end{equation}
 because
 \(T^{-1/10}(\log T)^{3/2}\to0\). The uncharged remainder is no larger.
 \end{proof}
