@@ -110,7 +110,7 @@ We give PersonalEvo a provable guarantee: its reward decomposes exactly into fou
 
 This decomposition yields a sharp condition for when personalization helps, routing provably outperforms uniform deployment whenever the routing and evolution gains together exceed the exploration cost, together with a plug-in regret bound on the exploration cost.
 
-We evaluate PersonalEvo on nine benchmarks: three synthetic personalized-agent environments, two agent-framework substrates (GEPA prompt archives \citep{agrawal2025geparp}, Hermes skill configurations \citep{hermes_selfevolution}), and four real-data preference datasets (BESPOKE \citep{personalized_agent_pabf}, PAHF Shopping and Embodied \citep{pahf2025}, and PrefEval \citep{zhao2025prefeval}).
+We evaluate PersonalEvo on nine benchmarks: three synthetic personalized-agent environments, two agent-framework substrates (GEPA prompt archives \citep{agrawal2025geparp}, Hermes skill configurations \citep{hermes_selfevolution}), and four real-data preference datasets (BESPOKE \citep{jin2026personalizing}, PAHF Shopping and Embodied \citep{pahf2025}, and PrefEval \citep{zhao2025prefeval}).
 
 Across all nine, PersonalEvo achieves higher mean reward than both the static baseline and random candidate selection.
 
@@ -123,7 +123,7 @@ Building on this base, we introduce \emph{Hyper-Ridge PersonalEvo}, which replac
 
 \label{sec:intro}
 
-Modern LLM agents increasingly choose among collections of prompts, skills, tools, and workflows instead of relying on one fixed policy. We call such a collection an \emph{archive} and each deployable entry a \emph{candidate}. Personalization methods learn user profiles and preference-conditioned behavior \citep{salemi2023lamp,zhao2025prefeval,personalized_agent_pabf}; prompt and agent evolution methods search for stronger candidates \citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp}; and routing methods choose among available models or policies at inference time \citep{ong2024routellm,hu2024routerbench,li2025llmbandit,tsai2026neuralucb}. These lines of work address three related decisions: what a user prefers, how the archive should improve, and which candidate should handle the next request.
+Modern LLM agents increasingly choose among collections of prompts, skills, tools, and workflows instead of relying on one fixed policy. We call such a collection an \emph{archive} and each deployable entry a \emph{candidate}. Personalization methods learn user profiles and preference-conditioned behavior \citep{salemi2023lamp,zhao2025prefeval,jin2026personalizing}; prompt and agent evolution methods search for stronger candidates \citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp}; and routing methods choose among available models or policies at inference time \citep{ong2024routellm,hu2024routerbench,li2025llmbandit,tsai2026neuralucb}. These lines of work address three related decisions: what a user prefers, how the archive should improve, and which candidate should handle the next request.
 
 Consider a support agent whose archive contains formal and casual policies for refund and shipping requests. Serving every user the best policy on average discards this useful diversity. A personalized router can learn which policy works for each user, but it must first try candidates whose value is uncertain. Archive growth makes this cost recur: whenever the agent adds a mutation after a failure, a conventional bandit sees a new arm and starts learning it from scratch. Yet the candidates are related. What the router learns about formality from a refund policy should inform a formal shipping policy, even though the two policies should retain different reward models. Archive growth therefore creates a tension: it can add better candidates while also adding enough exploration to erase their benefit.
 
@@ -191,7 +191,7 @@ These route at the \emph{model} level over a fixed pool; PersonalEvo routes \emp
 
 Benchmarks such as LaMP \citep{salemi2023lamp}, PersonalLLM \citep{zollo2024personalllm}, and PrefEval \citep{zhao2025prefeval} supply user-feedback signals, while PersonaAgent \citep{zhang2025personaagent} and persistent-memory frameworks \citep{westhausser2025persistent} maintain per-user personas and evolving profiles.
 
-The closest personalized-bandit antecedent, PAB-F \citep{personalized_agent_pabf}, models per-user reward as a factorized function of context and a fixed memory/tool/style action set, and studies regret against an in-archive oracle.
+The closest personalized-bandit antecedent, PAB-F \citep{jin2026personalizing}, models per-user reward as a factorized function of context and a fixed memory/tool/style action set, and studies regret against an in-archive oracle.
 
 Prompt and agent evolution methods, including Promptbreeder \citep{fernando2023promptbreeder}, EvoPrompt \citep{guo2024evoprompt}, Symbolic Learning \citep{zhou2024symbolic}, and GEPA's reflective Pareto search \citep{agrawal2025geparp}, improve prompts or archives through offline search rather than online user-conditioned routing.
 
@@ -440,7 +440,7 @@ where $\mathrm{cat}(a)$ is the candidate's category and $w_u \in \mathbb{R}^{K_{
 
 As a concrete instance (used in our experiments), the $K_{\mathrm{cat}}=5$ categories are $\{\text{sorting}, \text{searching}, \text{formatting}, \text{general}, \text{calc}\}$, so for a candidate $a$ in the \texttt{searching} category, $\mathrm{onehot}(\mathrm{cat}(a))=(0,1,0,0,0)$ and the user block $w_u$ records that user's affinity for each of the five categories.
 
-We refer the reader to Appendix~\ref{app:implementation} for the full construction (categories, quality components, and feature concatenation), and to \citet{personalized_agent_pabf} for a richer factorized feature map over task type, memory mode, tool mode, and answer style.
+We refer the reader to Appendix~\ref{app:implementation} for the full construction (categories, quality components, and feature concatenation), and to \citet{jin2026personalizing} for a richer factorized feature map over task type, memory mode, tool mode, and answer style.
 
 The reflection trigger is the high-gap-failure rule
 
@@ -1203,7 +1203,7 @@ This corollary is the formal sense in which learning archive geometry can make p
 
 We evaluate on three synthetic environments that share the same reward structure but differ in user heterogeneity.
 
-The mean reward follows the PABF formulation \citep{personalized_agent_pabf}:
+The mean reward follows the PABF formulation \citep{jin2026personalizing}:
 
 \begin{equation}
 \label{eq:exp-mu}
