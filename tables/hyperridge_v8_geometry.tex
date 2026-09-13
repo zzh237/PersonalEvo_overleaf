@@ -3,6 +3,8 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
+\caption{Matched geometry controls. Mean per-round exploration cost $T^{-1}\sum_t[m_t-\mu(U,a_t)]$, with standard deviation across five seeds; lower is better. All archives are fixed, all ridge weights are $0.5$, and the exploration multiplier is $0.8$. HRB-NF uses identity geometry; HRS, HRD, and HRP use scalar, diagonal, and full periodically estimated geometry. These are simulated or proxy rewards, not live benchmark executions.}
+\label{tab:geometry-controls}
 \begin{tabular}{lcccc}
 \toprule
 Environment & HRB-NF & HRS & HRD & HRP \\
@@ -18,6 +20,4 @@ PAHF embodied & $0.1256\pm0.0004$ & $0.1036\pm0.0010$ & $0.1040\pm0.0010$ & $0.1
 PrefEval & $0.0476\pm0.0004$ & $0.0137\pm0.0007$ & $0.0137\pm0.0009$ & $0.0128\pm0.0008$ \\
 \bottomrule
 \end{tabular}
-\caption{Matched geometry controls. Mean per-round exploration cost $T^{-1}\sum_t[m_t-\mu(U,a_t)]$, with standard deviation across five seeds; lower is better. All archives are fixed, all ridge weights are $0.5$, and the exploration multiplier is $0.8$. HRB-NF uses identity geometry; HRS, HRD, and HRP use scalar, diagonal, and full periodically estimated geometry. These are simulated or proxy rewards, not live benchmark executions.}
-\label{tab:geometry-controls}
 \end{table}

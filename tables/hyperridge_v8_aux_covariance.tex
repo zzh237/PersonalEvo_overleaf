@@ -3,6 +3,8 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
+\caption{Auxiliary covariance diagnostics from the configured suite. Selected mean reward with standard deviation across five seeds. Fitted covariance uses the complete reward matrix and is not HRK. Holdout covariance uses reserve candidates but does not implement the HRC theorem. The PAHF embodied holdout is inapplicable because no reserve candidates remain; the dash is not an imputed result.}
+\label{tab:hyper-aux-covariance}
 \begin{tabular}{lcc}
 \toprule
 Environment & Fitted covariance & Holdout covariance \\
@@ -18,6 +20,4 @@ PAHF embodied & $0.7566\pm0.0003$ & -- \\
 PrefEval & $0.6098\pm0.0005$ & $0.6382\pm0.0128$ \\
 \bottomrule
 \end{tabular}
-\caption{Auxiliary covariance diagnostics from the configured suite. Selected mean reward with standard deviation across five seeds. Fitted covariance uses the complete reward matrix and is not HRK. Holdout covariance uses reserve candidates but does not implement the HRC theorem. The PAHF embodied holdout is inapplicable because no reserve candidates remain; the dash is not an imputed result.}
-\label{tab:hyper-aux-covariance}
 \end{table}

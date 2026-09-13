@@ -1,6 +1,6 @@
 
 \documentclass{article} % For LaTeX2e
-\usepackage{iclr2026_conference,times}
+\usepackage{iclr2027_conference,times}
 
 % Optional math commands from https://github.com/goodfeli/dlbook_notation.
 \input{math_commands.tex}
@@ -97,28 +97,26 @@
 \maketitle
 
 \begin{abstract}
-Language-model agents can personalize their behavior by choosing among
-prompts, skills, or policies. Learning a separate reward model for every
-candidate incurs exploration, especially when new candidates enter the
-archive. We introduce HyperRidge, a contextual-bandit router that retains
-candidate-specific predictors but regularizes them with a shared covariance.
-The covariance describes how candidate parameters vary across feature
-directions and shapes both estimation and uncertainty. For known geometry,
-we prove a cumulative exploration-cost bound with an effective-dimension
-potential and an explicit confidence radius. For an independently calibrated
-and frozen covariance, we prove finite-sample error control and a routing
-bound. Neither guarantee covers periodic online re-estimation.
-
-We evaluate known geometry, matched covariance controls, and the practical
-periodic method. On planted rank-three problems, known geometry reduces
-exploration cost by $46$--$59\%$, but periodic estimation increases it.
-Across nine synthetic and proxy environments, matched controls show lower
-exploration cost than identity regularization without a consistent advantage
-over scalar or diagonal covariance. A separate $600$-case real-LLM study
-finds $67.47\%$ preference accuracy for the periodic method, compared with
-$77.47\%$ for ordinary ridge. These results distinguish the value of correct
-geometry from the unresolved difficulty of learning it under adaptive
-candidate selection.
+Personalizing a language-model agent requires learning which prompt, skill,
+or policy works for each user from limited feedback. The agent observes the
+outcome of its chosen candidate, not how the alternatives would have
+performed. We model these user-dependent choices as a contextual bandit,
+balancing the quality of current decisions with the cost of trying
+uncertain candidates. We ask whether statistical relationships among candidates can
+reduce this exploration cost. We introduce HyperRidge, which retains a
+separate reward predictor for each candidate but uses a shared covariance
+to regularize their parameters and quantify uncertainty. Our analysis gives
+finite-time exploration bounds for supplied covariance and for covariance
+estimated from independent calibration data, accounting for estimation
+uncertainty and calibration cost. Correct covariance reduces exploration
+cost by $46$--$59\%$ on planted problems. However, comparisons across nine
+synthetic and proxy environments and a $600$-case real-LLM study show that
+estimating a full covariance from selected feedback does not reliably
+outperform simpler regularization. These results separate the potential
+benefit of shared structure from the difficulty of estimating it under
+selective feedback. They show why covariance estimation error and its data
+cost must be included when assessing whether sharing information improves
+personalized routing.
 \end{abstract}
 
 \section{Introduction}
@@ -136,12 +134,6 @@ directions such as tone or level of detail. Learning which directions matter
 could help the router regularize a new candidate without treating its reward
 model as identical to those already in the archive.
 
-Profile and memory methods condition agents on users
-\citep{salemi2023lamp,jin2026personalizing,zhang2025personaagent,westhausser2025persistent};
-evolution methods search for stronger candidates
-\citep{fernando2023promptbreeder,guo2024evoprompt,zhou2024symbolic,agrawal2025geparp};
-and fixed-pool routers learn assignments
-\citep{ong2024routellm,li2025llmbandit,tsai2026neuralucb}.
 Our focus is the statistical relation among the candidate reward models.
 Ordinary disjoint linear bandits estimate each model separately
 \citep{li2010contextual,chu2011linucb}. Sharing one predictor instead would
@@ -163,16 +155,10 @@ more uncertainty. Candidate-specific observations still determine each
 predictor. What is shared is the geometry of estimation, not a common reward
 coefficient or the unobserved reward of another candidate.
 
-We first analyze supplied geometry, then independently estimated geometry.
-HyperRidge-Known (HRK) has a finite-time exploration bound governed by a
-geometric potential and its full confidence radius.
-HyperRidge-Calibrated (HRC) estimates covariance from fresh calibration
-candidates and freezes it before routing. Its additional calibration and
-width-inflation charge is $o(\sqrt T)$ under the stated schedule; its leading
-confidence radius is not the oracle radius.
-HyperRidge-Periodic (HRP) is the practical update that re-estimates geometry
-from online candidate models. The HRK and HRC guarantees do not apply to
-that adaptive update.
+We analyze supplied geometry and covariance estimated from independent
+calibration data, accounting for uncertainty and the cost of calibration.
+These guarantees require fixed geometry during routing; they do not cover
+periodic covariance updates from adaptively selected feedback.
 
 The experiments follow the same distinction. Planted low-rank problems test
 the effect of supplying correct geometry. Matched identity, scalar,
@@ -180,7 +166,7 @@ diagonal, and full-covariance controls test what periodic estimation adds.
 The complete method is then evaluated on nine synthetic and proxy
 environments and on real LLM answers to held-out preference questions.
 Known geometry helps in the planted study, but full covariance does not
-consistently outperform simpler adaptive regularizers, and HRP underperforms
+consistently outperform simpler adaptive regularizers, and the periodic estimator underperforms
 ordinary ridge in the real-LLM study. Base-router ablations appear last as
 component analysis rather than evidence for successful covariance learning.
 
@@ -190,21 +176,13 @@ The contributions are:
 \item \textbf{Shared-geometry routing.} HyperRidge uses a common covariance
 to regularize separate candidate reward models and their UCB widths.
 \item \textbf{Known and calibrated geometry guarantees.} We bound exploration
-for HRK and HRC under explicit observation, diversity, and confidence
+under explicit observation, diversity, and confidence
 conditions. A reward identity gives a downstream sufficient condition for
 improving over fixed deployment.
 \item \textbf{Controlled evaluation of estimated geometry.} Planted problems,
 matched covariance controls, and a real-LLM study distinguish the benefit of
 correct geometry from the limitations of the periodic estimator.
 \end{enumerate}
-
-\paragraph{Paper organization.}
-Sections~\ref{sec:background}--\ref{sec:theory} present the routing problem,
-HyperRidge, and its known-geometry and calibration guarantees.
-Section~\ref{sec:experiments} evaluates geometry, the complete method, and
-base components; Section~\ref{sec:related} discusses related work.
-Appendices~\ref{app:hyper-proofs}--\ref{app:err-control-proof} give the
-geometry proofs. Reward accounting and detailed component results follow.
 
 \section{Problem Setup}
 \label{sec:background}
@@ -341,52 +319,6 @@ The response vector contains observed centered rewards $r_s-b(u_s)$, not
 unknown means. A shared router can collect rows from different users;
 the fixed-user reward guarantee specializes this procedure to $u_t\equiv U$.
 
-\begin{algorithm}[t]
-\caption{HyperRidge-Periodic (HRP): routing with periodic covariance updates}
-\label{alg:hyper-ridge}
-\begin{algorithmic}[1]
-\Require Initial archive $A_1$, ridge weight $\lambda > 0$, exploration
-  weight $\alpha > 0$, re-estimation period $\tau \in \mathbb{N}$,
-  regularizer $\epsilon > 0$
-\State Initialize $\widehat{\Omega}_1 \gets I_d$; for each candidate $a$,
-  initialize $X_{a,1}$ and $y_{a,1}$ as empty
-\For{$t = 1, 2, \dots, T$}
-  \State Observe user $u_t$ and eligible candidate set $A_t(u_t)$
-  \For{each candidate $a \in A_t(u_t)$}
-    \State Compute
-      $V_{a,t}^{\mathrm{hyper}} \gets X_{a,t}^\top X_{a,t}
-        + \lambda \widehat{\Omega}_t^{-1}$
-    \State Compute
-      $\widehat{\theta}_{a,t} \gets
-        \bigl( V_{a,t}^{\mathrm{hyper}} \bigr)^{-1}
-        X_{a,t}^\top y_{a,t}$
-    \State Compute
-      $\mathrm{UCB}_t^{\mathrm{hyper}}(u_t, a) \gets
-        x(u_t, a)^\top \widehat{\theta}_{a,t}
-        + \alpha \sqrt{ x(u_t, a)^\top
-          \bigl( V_{a,t}^{\mathrm{hyper}} \bigr)^{-1} x(u_t, a) }$
-  \EndFor
-  \State Select
-    $a_t \in \arg\max_{a \in A_t(u_t)} \mathrm{UCB}_t^{\mathrm{hyper}}(u_t, a)$
-    and observe reward $r_t$; set $y_t\gets r_t-b(u_t)$
-  \State Update per-candidate data: append $x(u_t, a_t)^\top$ to
-    $X_{a_t, t+1}$ and $y_t$ to $y_{a_t, t+1}$
-  \If{$t \equiv 0 \pmod{\tau}$}
-    \State Re-estimate the hyper-covariance from the archive's
-      candidate estimates:
-      \begin{equation}
-        \widehat{\Omega}_{t+1} \gets
-          \frac{1}{|A_t|} \sum_{a \in A_t}
-          \widehat{\theta}_{a,t} \widehat{\theta}_{a,t}^\top
-          + \epsilon I_d
-      \end{equation}
-  \Else
-    \State $\widehat{\Omega}_{t+1} \gets \widehat{\Omega}_t$
-  \EndIf
-\EndFor
-\end{algorithmic}
-\end{algorithm}
-
 A refresh aggregates the candidate estimates into a $d\times d$ matrix and
 changes the regularizer used in subsequent fits. The update uses shrunken
 point estimates, including zero estimates for unobserved candidates; it does
@@ -426,42 +358,10 @@ proofs precede the supporting reward and archive analysis in the appendix.
 
 We use the observation model of Section~\ref{sec:background}, writing
 $x(u,a)$ for the feature map $\psi(u,a)$ in the assumptions below.
-
-\begin{assumption}[Bounded mean reward]
-\label{ass:bounded}
-The mean reward is bounded:
-\begin{equation}
-\label{eq:ass-bounded}
-\mu(u,a) \in [0,1] \quad \text{for all } (u,a).
-\end{equation}
-\end{assumption}
-
-\begin{assumption}[Conditionally sub-Gaussian noise]
-\label{ass:subg}
-There exists $\sigma > 0$ with
-\begin{equation}
-\label{eq:ass-subg}
-\E\!\left[\exp(\lambda \xi_t) \mid \mathcal{F}_{t-1}\right] \,\le\, \exp(\lambda^2 \sigma^2 / 2), \qquad \lambda \in \mathbb{R}.
-\end{equation}
-\end{assumption}
-
-\begin{assumption}[Predictable archive]
-\label{ass:predictable}
-The user-specific archive is predictable:
-\begin{equation}
-\label{eq:ass-pred}
-\sigma(A_t(U)) \subseteq \mathcal{O}_{t-1}.
-\end{equation}
-\end{assumption}
-
-\begin{assumption}[Bounded features]
-\label{ass:bounded-feat}
-The feature map satisfies
-\begin{equation}
-\label{eq:ass-feat}
-\|\psi(u,a)\| \,\le\, L < \infty \quad \text{for all } (u,a).
-\end{equation}
-\end{assumption}
+Mean rewards lie in $[0,1]$, noise is conditionally centered and
+$\sigma$-sub-Gaussian, the archive is predictable, and features have norm
+at most $L$. Appendix~\ref{app:routing-conditions} states these requirements
+formally. Geometry-specific conditions follow.
 
 \subsection{HRK: known archive geometry}
 
@@ -471,35 +371,9 @@ HRK uses the generalized design
 held fixed at \(\Omega\). HRP in Algorithm~\ref{alg:hyper-ridge}
 instead re-estimates the geometry periodically.
 
-\begin{assumption}[Archive geometry and complexity cap]
-\label{assump:shared-structure}
-There is a known candidate-independent baseline $b(u)$ such that
-\begin{equation}
-\label{eq:hyper-linear-model}
-\mu(u,a)
-=
-b(u)+x(u,a)^{\top}\theta_a
-\in[0,1].
-\end{equation}
-The feature vector satisfies $x(u,a)\in\mathbb{R}^d$. There is a positive
-definite matrix $\Omega$ and finite constants $S_\Omega,L_\Omega$ such that
-\begin{equation}
-\label{eq:hyper-pd}
-\Omega\succ0,\qquad
-\|\theta_a\|_{\Omega^{-1}}\le S_\Omega,\qquad
-x(u,a)^\top\Omega x(u,a)\le L_\Omega^2
-\end{equation}
-for every candidate that can appear through round $T$. Candidate births,
-identities, parameters, and features satisfy the predictable birth-order
-conditions of Lemma~\ref{lem:predictable}. For the fixed-user trajectory, let
-\begin{equation}
-\label{eq:hyper-realized-union-main}
-\mathcal A_T(U)
-=
-\bigcup_{t=1}^{T}A_t(U)
-\end{equation}
-be the set of candidates that appear through round $T$. For a candidate design matrix $X$,
-define
+Assume $\|\theta_a\|_{\Omega^{-1}}\le S_\Omega$ and
+$x(u,a)^\top\Omega x(u,a)\le L_\Omega^2$.
+For a candidate design matrix $X$, the effective dimension is
 \begin{equation}
 \label{eq:hyper-deff}
 d_{\mathrm{eff}}(\Omega;X)
@@ -512,16 +386,9 @@ X^{\top}X+\lambda\Omega^{-1}
 \right)^{-1}
 \right].
 \end{equation}
-There is a deterministic complexity cap $\bar d_{\mathrm{eff},T}(\Omega)$ such
-that, almost surely,
-\begin{equation}
-\label{eq:hyper-low-deff}
-\max_{1\le s\le T+1}\max_{a\in\mathcal A_T(U)}
-d_{\mathrm{eff}}(\Omega;X_{a,s})
-\le
-\bar d_{\mathrm{eff},T}(\Omega).
-\end{equation}
-\end{assumption}
+Let $\bar d_{\mathrm{eff},T}(\Omega)$ be a deterministic upper bound on this
+quantity over all candidate designs through the horizon.
+Assumption~\ref{assump:shared-structure} states the full requirements.
 
 The known-geometry theorem needs only the ellipsoid, feature-radius, and
 complexity-cap conditions. Interpreting $\Omega$ as a covariance requires the
@@ -637,27 +504,11 @@ and, when charged, calibration pulls.
 
 \subsection{Conditional reward consequence}
 
-An exploration bound gives a reward comparison through an accounting
-identity. Let the routed value be
-$R_T=T^{-1}\sum_t\E[\mu(U,a_t(U))]$,
-$V_{\mathrm{static}}(A_1)=\max_a\E_U[\mu(U,a)]$ the best fixed initial
-candidate's value, $\Delta_{\mathrm{route}}(A_1)=\E[m_1(U)]-
-V_{\mathrm{static}}(A_1)$ the initial archive's routing gain, and
-$\bar G_T=T^{-1}\sum_t\E[m_t(U)-m_1(U)]$ the gain from archive growth.
-Then
-
-\begin{equation}
-\label{eq:method-thesis}
-\text{routed value}
-\,=\, V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1) + \bar G_T - \bar L_T.
-\end{equation}
-
-Thus a bound $\sum_t\E[L_t(U)]\le B_T$ is sufficient for
-$R_T>V_{\mathrm{static}}(A_1)$ when
-$\Delta_{\mathrm{route}}(A_1)+\bar G_T>B_T/T$.
-This is a consequence of the exploration guarantee, not an additional
-assumption used to prove it. The identity, examples, and full conditional
-comparison appear in Appendix~\ref{app:reward-support}.
+An exploration bound gives a sufficient comparison with fixed deployment
+when the reward available from personalization and archive growth exceeds
+the exploration budget. The accounting identity and full comparison are
+given in Appendix~\ref{app:reward-support}; they are consequences of the
+exploration analysis, not assumptions used to prove it.
 
 \paragraph{What the bounds do not imply.}
 A smaller effective dimension alone does not establish a smaller budget:
@@ -688,6 +539,13 @@ We construct a diagnostic linear bandit in which $K=30$ candidate parameters are
 \begin{table}[H]
 \centering
 \small
+\caption{Exploration cost with known and estimated archive geometry.
+Mean cumulative exploration cost over five seeds on planted rank-three
+problems ($K=30$, $T=400$, $\lambda=0.5$ for all three routers).
+HRB: HyperRidge-Base; HRK: HyperRidge-Known; HRP: HyperRidge-Periodic.
+Lower is better. This mechanism diagnostic does not satisfy the assumptions
+of Proposition~\ref{prop:deff-bound}.}
+\label{tab:hyper-diagnostic}
 \begin{tabular}{rrrrr}
 \toprule
 $d$ & HRB & HRK & HRP (ours) & HRK reduction vs.\ HRB \\
@@ -697,14 +555,19 @@ $d$ & HRB & HRK & HRP (ours) & HRK reduction vs.\ HRB \\
 100 & 455.4 & 188.1 & 487.5 & $58.7\%$ \\
 \bottomrule
 \end{tabular}
-\caption{Exploration cost with known and estimated archive geometry.
-Mean cumulative exploration cost over five seeds on planted rank-three
-problems ($K=30$, $T=400$, $\lambda=0.5$ for all three routers).
-HRB: HyperRidge-Base; HRK: HyperRidge-Known; HRP: HyperRidge-Periodic.
-Lower is better. This mechanism diagnostic does not satisfy the assumptions
-of Proposition~\ref{prop:deff-bound}.}
-\label{tab:hyper-diagnostic}
+
 \end{table}
+
+\paragraph{Independent calibration under the theorem's assumptions.}
+We separately test HRC with bounded random effects, independent full-rank
+calibration, centered least squares, and a fixed routing archive.
+Across three calibration sizes and five seeds, relative covariance error
+decreases from $0.0243$ to $0.0064$, with no observed violation of the
+tested covariance or routing inequalities. These runs use deterministic
+confidence radii, not measured errors. The conservative certificate requires
+many calibration observations and does not establish a practical cost
+advantage. Appendix~\ref{app:hrc-validation} reports the protocol and full
+calibration charge.
 
 \paragraph{Matched covariance controls.}
 Table~\ref{tab:geometry-controls} compares identity, scalar, diagonal, and
@@ -759,7 +622,9 @@ in Appendix~\ref{app:hyper-experiments}. A covariance fitted from the complete
 reward matrix is a privileged reference, not HRK's supplied generative
 covariance. The holdout experiment also differs from HRC's independent,
 full-rank calibration and fixed post-calibration archive. It does not
-validate Theorem~\ref{thm:err-control-calibration-split-final}.
+validate Theorem~\ref{thm:err-control-calibration-split-final}; the
+assumption-matched validation is reported separately in
+Appendix~\ref{app:hrc-validation}.
 
 \FloatBarrier
 \subsection{Real LLM preference evaluation}
@@ -801,213 +666,18 @@ continuations with development-time prompt evolution, not online
 human-feedback deployment. Additional protocol and secondary results are
 described in Appendix~\ref{app:hyper-experiments}.
 
-\FloatBarrier
 \subsection{HRB component analysis}
+\label{sec:exp-components-main}
 
-\label{sec:exp-setup}
+In the shared-feature suite, removing routing lowers selected mean reward
+by $0.1497$ on average across nine environments. Removing reflection lowers
+it by only $0.0072$, and reflection helps in five of nine environments.
+The routing component therefore has more consistent support than archive
+growth. Appendix~\ref{app:hrb-components} retains the separate category-based
+component study, including its accounting table and
+Figures~\ref{fig:ablation}--\ref{fig:perround-matrix}. Those results concern
+ordinary-ridge HRB and do not evaluate learned covariance.
 
-This separate component study evaluates ordinary-ridge HRB, routing, and
-oracle-assisted reflection. Its category-based representation and
-configurations differ from the shared-feature comparisons above.
-Table~\ref{tab:envs} describes this component protocol.
-The three synthetic environments share a reward structure but differ in
-user heterogeneity.
-
-The mean reward follows the PABF formulation \citep{jin2026personalizing}:
-
-\begin{equation}
-\label{eq:exp-mu}
-\mu(u,a) = f\bigl(q(a),\; w_u(\mathrm{cat}(a))\bigr),
-\end{equation}
-
-where $q(a)\in[0,1]$ is the intrinsic candidate quality, $\mathrm{cat}(a)\in\mathcal{C}$ is the candidate's category, $w_u\in\Delta^{|\mathcal{C}|-1}$ is the user's category preference, and $f$ is increasing in both arguments (functional form in Appendix~\ref{app:impl-reward}).
-
-The theory uses $r_t=\mu(U,a_t(U))+\xi_t$ with conditionally mean-zero noise. The experimental simulator instead records
-\begin{equation}
-\label{eq:exp-clipped-reward}
-r_t=\operatorname{clip}\!\left(\mu(U,a_t(U))+\eta_t,0,1\right),
-\qquad
-\eta_t\sim\mathcal N(0,0.05^2).
-\end{equation}
-
-The component accounting table reports the observed residual \(m_t-r_t\),
-unlike the mean-reward endpoint in Table~\ref{tab:geometry-controls}.
-Clipping can make the residual biased for the pre-clipping mean-reward
-exploration cost. In a deployed system, \(m_t(u)\) would also require
-held-out estimation.
-
-\begin{table*}[t]
-\centering
-\small
-\begin{minipage}[t]{0.48\textwidth}
-\vspace{0pt}
-\centering
-\captionsetup{justification=raggedright,singlelinecheck=false}
-\begingroup
-\scriptsize
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lccl}
-\toprule
-\textbf{Benchmark} & $|\mathcal{U}|$ & $|A_1|$ & Preference structure \\
-\midrule
-General       &  8 & 12 & 5 disjoint category peaks \\
-Workspace     &  8 & 12 & 2 broad paired peaks \\
-Support       &  8 & 12 & 3 overlapping clusters \\
-GEPA archive  & 12 & 15 & heterogeneous task prefs \\
-Hermes agent  & 15 & 20 & (skill,mem,tool) clusters \\
-BESPOKE       & 30 & 40 & 4-dim rubric prefs \\
-PAHF shop.    & 20 & 40 & product-attribute prefs \\
-PAHF embod.   & 40 & 40 & embodied object choice \\
-PrefEval      & 20 & 10 & topic-strategy prefs \\
-\bottomrule
-\end{tabular}
-\endgroup
-\captionof{table}{HRB component-study environments.
-$|\mathcal{U}|$: users; $|A_1|$: initial candidates.
-General, Workspace, and Support use $T{=}300$; others use $T{=}250$.
-These configurations describe the component study, not the shared-feature
-or real-LLM comparisons.}
-\label{tab:envs}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.50\textwidth}
-\vspace{0pt}
-\centering
-\captionsetup{justification=raggedright,singlelinecheck=false}
-\begingroup
-\scriptsize
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Benchmark} & $V_{\mathrm{st}}$ & $\Delta_{\mathrm{rt}}$ & $\bar G_T$ & $\bar L_T^{\mathrm{obs}}$ & \textbf{Obs.\ margin} \\
-\midrule
-General       & .570 & .280 & .051 & .036 & $\mathbf{+.295}$ \\
-Workspace     & .577 & .124 & .041 & .043 & +.122 \\
-Support       & .579 & .215 & .061 & .039 & +.237 \\
-GEPA archive  & .654 & .048 & .023 & .025 & +.046 \\
-Hermes agent  & .703 & .092 & .036 & .028 & +.100 \\
-BESPOKE       & .653 & .036 & .001 & .010 & +.027 \\
-PAHF shop.    & .577 & .209 & .002 & .054 & +.157 \\
-PAHF embod.   & .290 & .238 & .000 & .071 & +.167 \\
-PrefEval      & .531 & .251 & .000 & .028 & +.223 \\
-\bottomrule
-\end{tabular}
-\endgroup
-\captionof{table}{Observed-reward accounting for HyperRidge-Base (HRB). Here
-\(\bar L_T^{\mathrm{obs}}=T^{-1}\sum_t(m_t-r_t)\), so the last column is the
-observed-reward margin
-\(\Delta_{\mathrm{rt}}+\bar G_T-\bar L_T^{\mathrm{obs}}\). It is not the
-theoretical dominance margin unless \(r_t-\mu(U,a_t)\) is conditionally
-mean-zero.}
-\label{tab:main}\label{tab:e6-decomp}
-\end{minipage}
-\end{table*}
-
-We compare HRB and four component ablations of Algorithm~\ref{alg:router}: \textbf{HRB-NR} removes routing and selects candidates uniformly at random; \textbf{HRB-NF} removes reflection and freezes the archive; \textbf{HRB-NU} removes user-preference features; and \textbf{HRB-1} uses a single candidate selected by intrinsic quality. HRB-NU retains a private router and archive for each user, so it is not a no-personalization baseline. HRB-1 differs from Static, which selects the best candidate by population-average reward.
-
-The component figures show HRB, HRB-NR, and HRB-NF against the Static
-and Oracle references. Table~\ref{tab:app-decomp-full} reports all five
-variants for the three synthetic environments.
-
-\paragraph{Component results.}
-
-\label{sec:exp-results}
-
-We estimate the first three terms of \eqref{eq:method-thesis} and the observed-reward residual \(\bar L_T^{\mathrm{obs}}\) on each benchmark (definitions in Appendix~\ref{app:impl-decomp}).
-
-Table~\ref{tab:main} reports the component study's observed-reward
-accounting across its nine environments.
-
-Within this study:
-
-\begin{enumerate}
-\item \textbf{Routing gain is the largest positive component.} In every row, $\Delta_{\mathrm{route}}$ exceeds $\bar G_T$: routing gains range from $0.036$ to $0.280$, while evolution gains range from $0$ to $0.061$. The ordering broadly tracks user heterogeneity, consistent with Lemma~\ref{lem:hetero}.
-\item \textbf{The observed-reward margin is positive.} On all nine benchmarks, including four with real user preference data, $\Delta_{\mathrm{route}}+\bar G_T-\bar L_T^{\mathrm{obs}}$ ranges from $+0.027$ (BESPOKE) to $+0.295$ (General). Because rewards are clipped, this arithmetic does not by itself verify the mean-reward condition in Corollary~\ref{cor:dominance}.
-\item \textbf{Preference-derived settings show routing potential.}
-PAHF shopping ($\Delta_{\mathrm{route}}{=}0.209$) and PrefEval
-($\Delta_{\mathrm{route}}{=}0.251$) have structural gains comparable to the
-synthetic settings under their respective reward constructions.
-\end{enumerate}
-
-\paragraph{Ablation.} Figure~\ref{fig:ablation} compares HRB, HRB-NR, and
-HRB-NF with the Static and Oracle references on all nine benchmarks.
-
-Among the two plotted component ablations, removing routing causes the larger
-reward drop; removing reflection causes a smaller drop.
-
-The plotted component-study means satisfy HRB-NR $<$ Static $<$ HRB-NF
-$<$ HRB $<$ Oracle in each environment. This ordering is not universal:
-in the shared-feature full-method suite, HRB improves over HRB-NF in only
-five of nine environments. There, removing routing reduces selected mean
-reward by $0.1497$ on average, whereas removing reflection reduces it by
-$0.0072$. The component evidence therefore supports routing more
-consistently than reflection.
-
-\begin{figure}[h]
-\centering
-% Replace only legacy method labels; preserve the registered plot raster.
-\begin{Overpic}[rel=2084]{\includegraphics[width=\columnwidth]{fig_ablation_9benchmarks.png}}
-\put(278,602){\color{white}\rule{93\unitlength}{24\unitlength}}
-\put(281,606){\resizebox{!}{14.5\unitlength}{\sffamily HRB-NR}}
-\put(446,602){\color{white}\rule{86\unitlength}{24\unitlength}}
-\put(449,606){\resizebox{!}{14.5\unitlength}{\sffamily HRB-NF}}
-\put(607,602){\color{white}\rule{90\unitlength}{24\unitlength}}
-\put(611,606){\resizebox{!}{14.5\unitlength}{\sffamily HRB}}
-\end{Overpic}
-\caption{Component ablations of HyperRidge-Base (HRB). Mean reward on nine
-benchmarks. Within each benchmark, the bars are ordered Static, HRB-NR,
-HRB-NF, HRB, and Oracle from left to right. HRB-NR and HRB-NF
-remove routing and reflection from HRB, respectively. HRB uses ordinary
-ridge, not a learned covariance. The bars show means without uncertainty
-intervals.}
-\label{fig:ablation}
-\end{figure}
-
-\paragraph{Per-round convergence.} Figure~\ref{fig:perround-matrix} shows
-per-round reward traces for the same five series.
-
-The traces illustrate finite-horizon adaptation by HRB; they do not evaluate
-HRP or establish a convergence rate.
-
-The figure plots reward rather than the observed-reward residual; per-seed
-residuals appear in Tables~\ref{tab:app-regret} and
-\ref{tab:app-regret-abl}. These finite traces do not identify an asymptotic
-rate.
-
-\begin{figure}[h]
-\centering
-% Replace only legacy method labels; preserve the registered plot raster.
-\begin{Overpic}[rel=1633]{\includegraphics[width=\columnwidth]{fig_perround_3x3_matrix.png}}
-\put(643,19){\color{white}\rule{50\unitlength}{29\unitlength}}
-\put(647,25){\resizebox{!}{17\unitlength}{\sffamily HRB}}
-\put(765,19){\color{white}\rule{113\unitlength}{29\unitlength}}
-\put(768,25){\resizebox{!}{17\unitlength}{\sffamily HRB-NF}}
-\put(1091,19){\color{white}\rule{104\unitlength}{29\unitlength}}
-\put(1094,25){\resizebox{!}{17\unitlength}{\sffamily HRB-NR}}
-\end{Overpic}
-\caption{Per-round reward of HyperRidge-Base (HRB) and its ablations on nine
-benchmarks. The five series are
-\textbf{HRB} (red; concat features, gated reflection, ordinary-ridge LinUCB),
-\textbf{HRB-NF} (teal; frozen archive, $\bar G_T{=}0$),
-\textbf{HRB-NR} (orange; uniform-random selection), \textbf{Static} (blue dotted; best single
-candidate for all users), and \textbf{Oracle} (gray dashed; per-user optimum).
-The curves show means without uncertainty bands, and the vertical range
-differs by panel. The top row is synthetic; the remaining rows use
-framework-inspired and preference-data settings.}
-\label{fig:perround-matrix}
-\end{figure}
-
-
-The corresponding observed-reward margins are
-\begin{equation}
-\label{eq:conc-margins}
-\Delta_{\mathrm{route}}(A_1) + \bar G_T - \bar L_T^{\mathrm{obs}}
-\;\in\; [+0.027,\, +0.295]
-\end{equation}
-They summarize this component study and do not verify the mean-reward
-dominance condition or the learned-covariance guarantees.
-
-\FloatBarrier
 \section{Related Work}
 
 \label{sec:related}
@@ -1046,8 +716,10 @@ underperforms it in the real-LLM evaluation, where it fails to select newly
 admitted candidates during training.
 
 Several limitations remain. HRP's adaptive covariance estimate is not covered
-by the HRK or HRC guarantees, and the current holdout experiment does not
-satisfy the HRC theorem's calibration assumptions. The fixed-user feature
+by the HRK or HRC guarantees. The independent HRC validation meets the
+finite-sample assumptions but requires extensive calibration; it does not
+test the asymptotic schedule or establish a practical cost advantage.
+The fixed-user feature
 model also requires equally sharp bounds for identity and shared geometry
 before a dimension advantage can be claimed. The proxy studies use
 oracle-assisted archive growth; the real-LLM study instead uses a
@@ -1056,8 +728,18 @@ answer per case and candidate. Improving periodic estimation requires
 investigating centering, covariance uncertainty, and new-candidate
 exploration on development data, followed by an untouched test cohort.
 
-\bibliography{iclr2026_conference}
-\bibliographystyle{iclr2026_conference}
+\clearpage
+\section*{Statement on the Use of AI}
+AI assistants were used to develop mathematical arguments, design and
+implement experiments, check code and numerical reporting, and draft and
+revise the manuscript. Language models also generated responses and judged
+preferences in the evaluation described in
+Section~\ref{sec:exp-live-llm}; their roles and evaluation protocol are
+reported there and in Appendix~\ref{app:hyper-experiments}.
+The authors are responsible for the claims, results, and final content.
+
+\bibliography{hyperridge}
+\bibliographystyle{iclr2027_conference}
 
 \clearpage
 
@@ -1080,7 +762,86 @@ Appendix~\ref{app:reward-support} and subsequent sections.
 Assume at most $K_{\max}$ candidates appear by round $T$, and index them by predictable birth order. Candidate slot $k$ is created at a stopping time $\tau_k$. Its identity and feature rule are $\mathcal O_{\tau_k-1}$-measurable, while its latent parameter is fixed at birth and $\mathcal F_{\tau_k-1}$-measurable. Before $\tau_k$, pad that slot's feature and selection indicator by zero. Each padded process is predictable in the analysis filtration, so self-normalized concentration applies conditionally from its birth time. A union bound over the deterministic slots $k\le K_{\max}$ is valid. The router remains adapted to \(\mathcal O_t\) and does not observe the latent parameter.
 \end{lemma}
 
+\subsection{Basic routing conditions}
+\label{app:routing-conditions}
+
+\begin{assumption}[Bounded mean reward]
+\label{ass:bounded}
+The mean reward is bounded:
+\begin{equation}
+\label{eq:ass-bounded}
+\mu(u,a) \in [0,1] \quad \text{for all } (u,a).
+\end{equation}
+\end{assumption}
+
+\begin{assumption}[Conditionally sub-Gaussian noise]
+\label{ass:subg}
+There exists $\sigma > 0$ with
+\begin{equation}
+\label{eq:ass-subg}
+\E\!\left[\exp(\lambda \xi_t) \mid \mathcal{F}_{t-1}\right] \,\le\, \exp(\lambda^2 \sigma^2 / 2), \qquad \lambda \in \mathbb{R}.
+\end{equation}
+\end{assumption}
+
+\begin{assumption}[Predictable archive]
+\label{ass:predictable}
+The user-specific archive is predictable:
+\begin{equation}
+\label{eq:ass-pred}
+\sigma(A_t(U)) \subseteq \mathcal{O}_{t-1}.
+\end{equation}
+\end{assumption}
+
+\begin{assumption}[Bounded features]
+\label{ass:bounded-feat}
+The feature map satisfies
+\begin{equation}
+\label{eq:ass-feat}
+\|\psi(u,a)\| \,\le\, L < \infty \quad \text{for all } (u,a).
+\end{equation}
+\end{assumption}
+
 \subsection{Generalized-ridge objects}
+
+\begin{assumption}[Archive geometry and complexity cap]
+\label{assump:shared-structure}
+There is a known candidate-independent baseline $b(u)$ such that
+\begin{equation}
+\label{eq:hyper-linear-model}
+\mu(u,a)
+=
+b(u)+x(u,a)^{\top}\theta_a
+\in[0,1].
+\end{equation}
+The feature vector satisfies $x(u,a)\in\mathbb{R}^d$. There is a positive
+definite matrix $\Omega$ and finite constants $S_\Omega,L_\Omega$ such that
+\begin{equation}
+\label{eq:hyper-pd}
+\Omega\succ0,\qquad
+\|\theta_a\|_{\Omega^{-1}}\le S_\Omega,\qquad
+x(u,a)^\top\Omega x(u,a)\le L_\Omega^2
+\end{equation}
+for every candidate that can appear through round $T$. Candidate births,
+identities, parameters, and features satisfy the predictable birth-order
+conditions of Lemma~\ref{lem:predictable}. For the fixed-user trajectory, let
+\begin{equation}
+\label{eq:hyper-realized-union-main}
+\mathcal A_T(U)
+=
+\bigcup_{t=1}^{T}A_t(U)
+\end{equation}
+be the set of candidates that appear through round $T$.
+Effective dimension is defined in \eqref{eq:hyper-deff}.
+There is a deterministic complexity cap $\bar d_{\mathrm{eff},T}(\Omega)$ such
+that, almost surely,
+\begin{equation}
+\label{eq:hyper-low-deff}
+\max_{1\le s\le T+1}\max_{a\in\mathcal A_T(U)}
+d_{\mathrm{eff}}(\Omega;X_{a,s})
+\le
+\bar d_{\mathrm{eff},T}(\Omega).
+\end{equation}
+\end{assumption}
 
 For results combined with the four-term decomposition, draw one user \(U\)
 before routing and set \(U_s=U\) at every round. The concentration lemmas below
@@ -2899,6 +2660,9 @@ Table~\ref{tab:hyper-theory-map} summarizes which parts of the HyperRidge theory
 \begin{table}[h]
 \centering
 \small
+\caption{Theory map for HyperRidge. HRK and HRC have separate guarantees;
+HRP does not.}
+\label{tab:hyper-theory-map}
 \begin{tabular}{
 p{0.24\linewidth}
 p{0.39\linewidth}
@@ -2914,12 +2678,10 @@ HRC frozen calibration estimate & finite-sample covariance and exploration bound
 HRP periodic covariance estimate & confidence and covariance rates & open \\
 Conditional reward consequence & \(V_{\mathrm{static}}+\Delta_{\mathrm{route}}+\bar G_T-\bar L_T\) & Theorem~\ref{thm:decomp} and Corollary~\ref{cor:hyper-dominance} \\
 Estimated-geometry experiments & matched controls and real LLM answers & completed; no general full-covariance advantage \\
-HRC empirical validation & independent full-rank calibration and frozen archive & not evaluated under the theorem's assumptions \\
+HRC empirical validation & independent full-rank calibration and frozen archive & Appendix~\ref{app:hrc-validation}; finite-sample synthetic check \\
 \bottomrule
 \end{tabular}
-\caption{Theory map for HyperRidge. HRK and HRC have separate guarantees;
-HRP does not.}
-\label{tab:hyper-theory-map}
+
 \end{table}
 
 \section{HRC: Calibration-Split Covariance Control}
@@ -3056,8 +2818,8 @@ Thus \(|\mathcal{N}|\le 9^d\).
 
 \begin{lemma}[Independent sub-Gaussian sample covariance]
 \label{lem:err-control-independent-subg-cov-final}
-There is a universal numerical constant \(C_{\rm cov}>0\) with the following
-property.  Let \(Z_1,\ldots,Z_N\in\mathbb{R}^d\) be independent mean-zero random
+The universal numerical constant \(C_{\rm cov}=24\) has the following
+property. Let \(Z_1,\ldots,Z_N\in\mathbb{R}^d\) be independent mean-zero random
 vectors such that, for every \(i\), every \(u\in\mathbb{S}^{d-1}\), and every
 \(s\in\mathbb{R}\),
 \begin{equation}
@@ -3086,7 +2848,8 @@ with the same deterministic value of \(K\).
 \end{lemma}
 
 \begin{proof}
-Fix \(u\in\mathbb S^{d-1}\). Chernoff's method, applied also to \(-u\),
+If \(K=0\), every \(Z_i=0\) almost surely and the claim is immediate.
+Assume \(K>0\). Fix \(u\in\mathbb S^{d-1}\). Chernoff's method, applied also to \(-u\),
 gives
 \begin{equation}
 \begin{aligned}
@@ -3157,7 +2920,33 @@ inside the brackets yields
 \frac{d\log 9+\log(2/\delta)}{N}
 \right].
 \end{equation}
-Since \(\log 9<3\), increasing the universal constant proves the stated bound.
+For an explicit constant, write \(X=u^\top Z_i\) and
+\(W=X^2-\mathbb E X^2\). The sub-Gaussian tail above gives
+\(\mathbb E|X|^{2p}\leq2(2K^2)^p p!\).
+If \(X'\) is an independent copy of \(X\), Jensen's inequality and
+\(|a-b|^p\leq a^p+b^p\) for \(a,b\geq0\) give, for integers \(p\geq2\),
+\begin{equation}
+\mathbb E|W|^p
+\leq \mathbb E|X^2-(X')^2|^p
+\leq 2\mathbb E|X|^{2p}
+\leq \frac{p!}{2}(32K^4)(2K^2)^{p-2}.
+\end{equation}
+Expanding the moment-generating function, using \(\mathbb E W=0\), and
+applying \(\log(1+v)\leq v\) yields
+\(\log\mathbb E e^{sW}\leq16K^4s^2/(1-2K^2|s|)\) for
+\(|s|<(2K^2)^{-1}\). Independence and Chernoff's inequality therefore give
+\begin{equation}
+\Pr\!\left(
+\left|\frac1N\sum_{i=1}^N W_i\right|
+>8K^2\sqrt{\frac{t}{N}}+2K^2\frac{t}{N}
+\right)\leq2e^{-t}.
+\end{equation}
+The same net argument bounds the operator norm by
+\(16K^2\sqrt{t/N}+4K^2t/N\), with
+\(t=d\log9+\log(2/\delta)\).
+Writing \(q=d+\log(2/\delta)\), we have \(t\leq(\log9)q\).
+Since \(16\sqrt{\log9}<24\) and \(4\log9<24\), this is at most
+\(24K^2[\sqrt{q/N}+q/N]\), proving the stated numerical choice.
 
 For the conditional version, fix a regular conditional distribution given the
 conditioning sigma-field.  Under that conditional distribution, the same proof
@@ -4468,6 +4257,80 @@ because
 \(T^{-1/10}(\log T)^{3/2}\to0\). The uncharged remainder is no larger.
 \end{proof}
 
+\subsection{Finite-sample HRC validation}
+\label{app:hrc-validation}
+
+This experiment implements the finite-sample procedure in
+Theorem~\ref{thm:err-control-calibration-split-final}, not the heuristic
+holdout diagnostic in Appendix~\ref{app:hyper-experiments}.
+Set $d=2$ and let $Q$ rotate the plane by $\pi/6$.
+Fresh candidate effects are
+$\theta_i=Q\operatorname{diag}(1,1/2)v_i$, where $v_i$ has independent
+Rademacher entries. Thus
+$\Omega=Q\operatorname{diag}(1,1/4)Q^\top$,
+$\mathbb E\theta_i=0$, and $\|\theta_i\|_{\Omega^{-1}}=\sqrt2$.
+Calibration features are $x_{i,j}=s_{i,j}/8$, with independent
+Rademacher vectors $s_{i,j}$ independent of all effects.
+Responses use the known baseline $b=1/2$ and independent
+Gaussian noise with standard deviation $0.05$, without clipping.
+Since $|x^\top\theta|\leq\sqrt{5/2}/8<1/2$, the mean rewards are bounded.
+
+We use $m=1280$ samples for each of
+$N\in\{32768,131072,524288\}$ calibration candidates, centered ordinary
+least squares, and ridge floor $\gamma=N^{-1/2}$.
+The supplied deterministic bounds are
+$S_\Omega=\sqrt2$, $\kappa_{\rm cal}=1/256$,
+$L_{\rm cal}^2=L_\Omega^2=1/32$, and
+$\|\Omega^{-1}\|_{\rm op}=4$.
+All three configurations meet the theorem's Gram sample-size condition.
+The covariance radius uses $C_{\rm cov}=24$, as established in
+Lemma~\ref{lem:err-control-independent-subg-cov-final}.
+We set $\delta_{\rm gram}=\delta_{\rm cov}=\delta_{\rm route}=0.01$
+and $\lambda=0.5$.
+The resulting $\varepsilon_*$ is below one before any observations are
+drawn, and HRC uses exactly
+$\alpha_{\widehat\Omega,T}(\varepsilon_*,\delta_{\rm route})$.
+
+Gaussian calibration is sampled through its exact sufficient statistics.
+If $C_i\sim\operatorname{Binomial}(m,1/2)$, the prescribed feature design has
+\begin{equation}
+G_i=\frac1{64}
+\begin{bmatrix}
+m & 2C_i-m\\
+2C_i-m & m
+\end{bmatrix},
+\qquad
+X_i^\top y_i\mid G_i,\theta_i
+\sim\mathcal N(G_i\theta_i,\sigma^2G_i).
+\end{equation}
+This generates the same OLS estimator as explicitly drawing every
+feature-response pair. Singular blocks use the theorem's zero-estimate
+rule and are not resampled. The sample count $Nm$ is charged in full;
+it is a modeled calibration cost, not a count of actual LLM calls.
+
+After calibration, twelve fresh candidates form a fixed routing archive.
+One independently sampled user feature is held fixed for $T=2000$ rounds.
+Candidate effects and routing noise are independent of calibration.
+Only the chosen candidate's centered response updates the router;
+latent means and effects are used solely for evaluation.
+The estimated covariance is never refreshed. The fixed-user design has
+effective dimension at most one for each candidate, including under
+identity regularization.
+
+\input{tables/hyperridge_v8_calibration.tex}
+
+Across the fifteen calibration runs, no singular block or violation of the
+tested Gram, covariance, simultaneous parameter-confidence, or routing
+inequality was observed. Five seeds do not empirically establish the
+nominal high-probability guarantee; the proof supplies that guarantee.
+The finite-sample radius decreases as $N$ increases, reducing HRC's
+exploration bonus and observed exploration cost. The calibration charge,
+however, greatly exceeds the routing horizon. At the smallest $N$, even
+the uncharged routing bound exceeds $T$. These results validate the
+specified statistical procedure and illustrate its conservative constants;
+they do not establish efficient calibration, a high-dimensional advantage,
+or the theorem's asymptotic schedule.
+
 \section{Supporting Reward and Archive Results}
 \label{app:reward-support}
 
@@ -4478,6 +4341,27 @@ References here to observed-reward accounting concern the HRB component
 study in Section~\ref{sec:exp-setup}.
 
 \subsection{Reward definitions}
+
+An exploration bound gives a reward comparison through an accounting
+identity. Let the routed value be
+$R_T=T^{-1}\sum_t\E[\mu(U,a_t(U))]$,
+$V_{\mathrm{static}}(A_1)=\max_a\E_U[\mu(U,a)]$ the best fixed initial
+candidate's value, $\Delta_{\mathrm{route}}(A_1)=\E[m_1(U)]-
+V_{\mathrm{static}}(A_1)$ the initial archive's routing gain, and
+$\bar G_T=T^{-1}\sum_t\E[m_t(U)-m_1(U)]$ the gain from archive growth.
+Then
+
+\begin{equation}
+\label{eq:method-thesis}
+\text{routed value}
+\,=\, V_{\mathrm{static}}(A_1) + \Delta_{\mathrm{route}}(A_1) + \bar G_T - \bar L_T.
+\end{equation}
+
+Thus a bound $\sum_t\E[L_t(U)]\le B_T$ is sufficient for
+$R_T>V_{\mathrm{static}}(A_1)$ when
+$\Delta_{\mathrm{route}}(A_1)+\bar G_T>B_T/T$.
+This is a consequence of the exploration guarantee, not an additional
+assumption used to prove it.
 
 We define the four terms of \eqref{eq:method-thesis}.
 
@@ -6795,6 +6679,8 @@ identity.
 \begin{table}[h]
 \centering
 \small
+\caption{Proof map for the supporting reward-accounting and HRB claims.}
+\label{tab:app-claim-map}
 \begin{tabular}{p{0.24\linewidth}p{0.39\linewidth}p{0.28\linewidth}}
 \toprule
 Claim & Formal content & Proof or qualification \\
@@ -6840,8 +6726,7 @@ The theorem comparator is \(V_{\mathrm{static}}(A_1)\), not a heuristic intrinsi
 Proved in Proposition~\ref{prop:7}; the numerical failure mode is Proposition~\ref{prop:9}. \\
 \bottomrule
 \end{tabular}
-\caption{Proof map for the supporting reward-accounting and HRB claims.}
-\label{tab:app-claim-map}
+
 \end{table}
 
 Together, these results close the appendix proof story: HyperRidge's supported claim is the four-term decomposition over the common initial archive, with conditional learning and discovery terms made explicit, and with the counterexamples identifying when stronger dominance or reflection claims would be unsound.
@@ -8140,6 +8025,58 @@ regret rate or a non-oracle theory of reflection.
 \section{Additional HyperRidge Experimental Details}
 \label{app:hyper-experiments}
 
+\subsection{Periodic covariance procedure}
+
+Algorithm~\ref{alg:hyper-ridge} gives the periodic update evaluated in the
+experiments. The calibrated procedure instead fixes its independently
+estimated covariance before routing.
+
+\begin{algorithm}[t]
+\caption{HyperRidge-Periodic (HRP): routing with periodic covariance updates}
+\label{alg:hyper-ridge}
+\begin{algorithmic}[1]
+\Require Initial archive $A_1$, ridge weight $\lambda > 0$, exploration
+  weight $\alpha > 0$, re-estimation period $\tau \in \mathbb{N}$,
+  regularizer $\epsilon > 0$
+\State Initialize $\widehat{\Omega}_1 \gets I_d$; for each candidate $a$,
+  initialize $X_{a,1}$ and $y_{a,1}$ as empty
+\For{$t = 1, 2, \dots, T$}
+  \State Observe user $u_t$ and eligible candidate set $A_t(u_t)$
+  \For{each candidate $a \in A_t(u_t)$}
+    \State Compute
+      $V_{a,t}^{\mathrm{hyper}} \gets X_{a,t}^\top X_{a,t}
+        + \lambda \widehat{\Omega}_t^{-1}$
+    \State Compute
+      $\widehat{\theta}_{a,t} \gets
+        \bigl( V_{a,t}^{\mathrm{hyper}} \bigr)^{-1}
+        X_{a,t}^\top y_{a,t}$
+    \State Compute
+      $\mathrm{UCB}_t^{\mathrm{hyper}}(u_t, a) \gets
+        x(u_t, a)^\top \widehat{\theta}_{a,t}
+        + \alpha \sqrt{ x(u_t, a)^\top
+          \bigl( V_{a,t}^{\mathrm{hyper}} \bigr)^{-1} x(u_t, a) }$
+  \EndFor
+  \State Select
+    $a_t \in \arg\max_{a \in A_t(u_t)} \mathrm{UCB}_t^{\mathrm{hyper}}(u_t, a)$
+    and observe reward $r_t$; set $y_t\gets r_t-b(u_t)$
+  \State Update per-candidate data: append $x(u_t, a_t)^\top$ to
+    $X_{a_t, t+1}$ and $y_t$ to $y_{a_t, t+1}$
+  \If{$t \equiv 0 \pmod{\tau}$}
+    \State Re-estimate the hyper-covariance from the archive's
+      candidate estimates:
+      \begin{equation}
+        \widehat{\Omega}_{t+1} \gets
+          \frac{1}{|A_t|} \sum_{a \in A_t}
+          \widehat{\theta}_{a,t} \widehat{\theta}_{a,t}^\top
+          + \epsilon I_d
+      \end{equation}
+  \Else
+    \State $\widehat{\Omega}_{t+1} \gets \widehat{\Omega}_t$
+  \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Shared-feature reward environments}
 
 The shared-feature studies use a normalized concatenation of an intercept,
@@ -8231,6 +8168,214 @@ is not a substitute for human evaluation.
 \subsection{Earlier one-hot adapter diagnostic}
 With tuning seeds disjoint from the five reporting seeds, HRP improves mean reward over HRB on six of seven adapters, with changes ranging from $+0.002$ on BESPOKE to $+0.048$ on Hermes, and loses $0.010$ on GEPA. These numbers do not establish cross-candidate geometry transfer. The diagnostic represents candidate $a$ by the one-hot vector $e_a$. Starting from $\widehat{\Omega}_1=I$, each candidate estimate has support only on its own coordinate, so the covariance update remains diagonal. HRP and HRD therefore match on every adapter and seed. More seeds cannot resolve this restriction of the feature map.
 
+\section{HRB Component Analysis}
+\label{app:hrb-components}
+\label{sec:exp-setup}
+
+This separate component study evaluates ordinary-ridge HRB, routing, and
+oracle-assisted reflection. Its category-based representation and
+configurations differ from the shared-feature comparisons above.
+Table~\ref{tab:envs} describes this component protocol.
+The three synthetic environments share a reward structure but differ in
+user heterogeneity.
+
+The mean reward follows the PABF formulation \citep{jin2026personalizing}:
+
+\begin{equation}
+\label{eq:exp-mu}
+\mu(u,a) = f\bigl(q(a),\; w_u(\mathrm{cat}(a))\bigr),
+\end{equation}
+
+where $q(a)\in[0,1]$ is the intrinsic candidate quality, $\mathrm{cat}(a)\in\mathcal{C}$ is the candidate's category, $w_u\in\Delta^{|\mathcal{C}|-1}$ is the user's category preference, and $f$ is increasing in both arguments (functional form in Appendix~\ref{app:impl-reward}).
+
+The theory uses $r_t=\mu(U,a_t(U))+\xi_t$ with conditionally mean-zero noise. The experimental simulator instead records
+\begin{equation}
+\label{eq:exp-clipped-reward}
+r_t=\operatorname{clip}\!\left(\mu(U,a_t(U))+\eta_t,0,1\right),
+\qquad
+\eta_t\sim\mathcal N(0,0.05^2).
+\end{equation}
+
+The component accounting table reports the observed residual \(m_t-r_t\),
+unlike the mean-reward endpoint in Table~\ref{tab:geometry-controls}.
+Clipping can make the residual biased for the pre-clipping mean-reward
+exploration cost. In a deployed system, \(m_t(u)\) would also require
+held-out estimation.
+
+\begin{table*}[t]
+\centering
+\small
+\begin{minipage}[t]{0.48\textwidth}
+\vspace{0pt}
+\centering
+\captionsetup{justification=raggedright,singlelinecheck=false}
+\captionof{table}{HRB component-study environments.
+$|\mathcal{U}|$: users; $|A_1|$: initial candidates.
+General, Workspace, and Support use $T{=}300$; others use $T{=}250$.
+These configurations describe the component study, not the shared-feature
+or real-LLM comparisons.}
+\label{tab:envs}
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccl}
+\toprule
+\textbf{Benchmark} & $|\mathcal{U}|$ & $|A_1|$ & Preference structure \\
+\midrule
+General       &  8 & 12 & 5 disjoint category peaks \\
+Workspace     &  8 & 12 & 2 broad paired peaks \\
+Support       &  8 & 12 & 3 overlapping clusters \\
+GEPA archive  & 12 & 15 & heterogeneous task prefs \\
+Hermes agent  & 15 & 20 & (skill,mem,tool) clusters \\
+BESPOKE       & 30 & 40 & 4-dim rubric prefs \\
+PAHF shop.    & 20 & 40 & product-attribute prefs \\
+PAHF embod.   & 40 & 40 & embodied object choice \\
+PrefEval      & 20 & 10 & topic-strategy prefs \\
+\bottomrule
+\end{tabular}
+\endgroup
+
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.50\textwidth}
+\vspace{0pt}
+\centering
+\captionsetup{justification=raggedright,singlelinecheck=false}
+\captionof{table}{Observed-reward accounting for HyperRidge-Base (HRB). Here
+\(\bar L_T^{\mathrm{obs}}=T^{-1}\sum_t(m_t-r_t)\), so the last column is the
+observed-reward margin
+\(\Delta_{\mathrm{rt}}+\bar G_T-\bar L_T^{\mathrm{obs}}\). It is not the
+theoretical dominance margin unless \(r_t-\mu(U,a_t)\) is conditionally
+mean-zero.}
+\label{tab:main}\label{tab:e6-decomp}
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Benchmark} & $V_{\mathrm{st}}$ & $\Delta_{\mathrm{rt}}$ & $\bar G_T$ & $\bar L_T^{\mathrm{obs}}$ & \textbf{Obs.\ margin} \\
+\midrule
+General       & .570 & .280 & .051 & .036 & $\mathbf{+.295}$ \\
+Workspace     & .577 & .124 & .041 & .043 & +.122 \\
+Support       & .579 & .215 & .061 & .039 & +.237 \\
+GEPA archive  & .654 & .048 & .023 & .025 & +.046 \\
+Hermes agent  & .703 & .092 & .036 & .028 & +.100 \\
+BESPOKE       & .653 & .036 & .001 & .010 & +.027 \\
+PAHF shop.    & .577 & .209 & .002 & .054 & +.157 \\
+PAHF embod.   & .290 & .238 & .000 & .071 & +.167 \\
+PrefEval      & .531 & .251 & .000 & .028 & +.223 \\
+\bottomrule
+\end{tabular}
+\endgroup
+
+\end{minipage}
+\end{table*}
+
+We compare HRB and four component ablations of Algorithm~\ref{alg:router}: \textbf{HRB-NR} removes routing and selects candidates uniformly at random; \textbf{HRB-NF} removes reflection and freezes the archive; \textbf{HRB-NU} removes user-preference features; and \textbf{HRB-1} uses a single candidate selected by intrinsic quality. HRB-NU retains a private router and archive for each user, so it is not a no-personalization baseline. HRB-1 differs from Static, which selects the best candidate by population-average reward.
+
+The component figures show HRB, HRB-NR, and HRB-NF against the Static
+and Oracle references. Table~\ref{tab:app-decomp-full} reports all five
+variants for the three synthetic environments.
+
+\paragraph{Component results.}
+
+\label{sec:exp-results}
+
+We estimate the first three terms of \eqref{eq:method-thesis} and the observed-reward residual \(\bar L_T^{\mathrm{obs}}\) on each benchmark (definitions in Appendix~\ref{app:impl-decomp}).
+
+Table~\ref{tab:main} reports the component study's observed-reward
+accounting across its nine environments.
+
+Within this study:
+
+\begin{enumerate}
+\item \textbf{Routing gain is the largest positive component.} In every row, $\Delta_{\mathrm{route}}$ exceeds $\bar G_T$: routing gains range from $0.036$ to $0.280$, while evolution gains range from $0$ to $0.061$. The ordering broadly tracks user heterogeneity, consistent with Lemma~\ref{lem:hetero}.
+\item \textbf{The observed-reward margin is positive.} On all nine benchmarks, including four with real user preference data, $\Delta_{\mathrm{route}}+\bar G_T-\bar L_T^{\mathrm{obs}}$ ranges from $+0.027$ (BESPOKE) to $+0.295$ (General). Because rewards are clipped, this arithmetic does not by itself verify the mean-reward condition in Corollary~\ref{cor:dominance}.
+\item \textbf{Preference-derived settings show routing potential.}
+PAHF shopping ($\Delta_{\mathrm{route}}{=}0.209$) and PrefEval
+($\Delta_{\mathrm{route}}{=}0.251$) have structural gains comparable to the
+synthetic settings under their respective reward constructions.
+\end{enumerate}
+
+\paragraph{Ablation.} Figure~\ref{fig:ablation} compares HRB, HRB-NR, and
+HRB-NF with the Static and Oracle references on all nine benchmarks.
+
+Among the two plotted component ablations, removing routing causes the larger
+reward drop; removing reflection causes a smaller drop.
+
+The plotted component-study means satisfy HRB-NR $<$ Static $<$ HRB-NF
+$<$ HRB $<$ Oracle in each environment. This ordering is not universal:
+in the shared-feature full-method suite, HRB improves over HRB-NF in only
+five of nine environments. There, removing routing reduces selected mean
+reward by $0.1497$ on average, whereas removing reflection reduces it by
+$0.0072$. The component evidence therefore supports routing more
+consistently than reflection.
+
+\begin{figure}[h]
+\centering
+% Replace only legacy method labels; preserve the registered plot raster.
+\begin{Overpic}[rel=2084]{\includegraphics[width=\columnwidth]{fig_ablation_9benchmarks.png}}
+\put(278,602){\color{white}\rule{93\unitlength}{24\unitlength}}
+\put(281,606){\resizebox{!}{14.5\unitlength}{\sffamily HRB-NR}}
+\put(446,602){\color{white}\rule{86\unitlength}{24\unitlength}}
+\put(449,606){\resizebox{!}{14.5\unitlength}{\sffamily HRB-NF}}
+\put(607,602){\color{white}\rule{90\unitlength}{24\unitlength}}
+\put(611,606){\resizebox{!}{14.5\unitlength}{\sffamily HRB}}
+\end{Overpic}
+\caption{Component ablations of HyperRidge-Base (HRB). Mean reward on nine
+benchmarks. Within each benchmark, the bars are ordered Static, HRB-NR,
+HRB-NF, HRB, and Oracle from left to right. HRB-NR and HRB-NF
+remove routing and reflection from HRB, respectively. HRB uses ordinary
+ridge, not a learned covariance. The bars show means without uncertainty
+intervals.}
+\label{fig:ablation}
+\end{figure}
+
+\paragraph{Per-round convergence.} Figure~\ref{fig:perround-matrix} shows
+per-round reward traces for the same five series.
+
+The traces illustrate finite-horizon adaptation by HRB; they do not evaluate
+HRP or establish a convergence rate.
+
+The figure plots reward rather than the observed-reward residual; per-seed
+residuals appear in Tables~\ref{tab:app-regret} and
+\ref{tab:app-regret-abl}. These finite traces do not identify an asymptotic
+rate.
+
+\begin{figure}[h]
+\centering
+% Replace only legacy method labels; preserve the registered plot raster.
+\begin{Overpic}[rel=1633]{\includegraphics[width=\columnwidth]{fig_perround_3x3_matrix.png}}
+\put(643,19){\color{white}\rule{50\unitlength}{29\unitlength}}
+\put(647,25){\resizebox{!}{17\unitlength}{\sffamily HRB}}
+\put(765,19){\color{white}\rule{113\unitlength}{29\unitlength}}
+\put(768,25){\resizebox{!}{17\unitlength}{\sffamily HRB-NF}}
+\put(1091,19){\color{white}\rule{104\unitlength}{29\unitlength}}
+\put(1094,25){\resizebox{!}{17\unitlength}{\sffamily HRB-NR}}
+\end{Overpic}
+\caption{Per-round reward of HyperRidge-Base (HRB) and its ablations on nine
+benchmarks. The five series are
+\textbf{HRB} (red; concat features, gated reflection, ordinary-ridge LinUCB),
+\textbf{HRB-NF} (teal; frozen archive, $\bar G_T{=}0$),
+\textbf{HRB-NR} (orange; uniform-random selection), \textbf{Static} (blue dotted; best single
+candidate for all users), and \textbf{Oracle} (gray dashed; per-user optimum).
+The curves show means without uncertainty bands, and the vertical range
+differs by panel. The top row is synthetic; the remaining rows use
+framework-inspired and preference-data settings.}
+\label{fig:perround-matrix}
+\end{figure}
+
+
+The corresponding observed-reward margins are
+\begin{equation}
+\label{eq:conc-margins}
+\Delta_{\mathrm{route}}(A_1) + \bar G_T - \bar L_T^{\mathrm{obs}}
+\;\in\; [+0.027,\, +0.295]
+\end{equation}
+They summarize this component study and do not verify the mean-reward
+dominance condition or the learned-covariance guarantees.
+
+\FloatBarrier
 \section{HRB Experimental Protocol}
 
 \label{app:implementation}
@@ -8484,6 +8629,8 @@ The columns give each symbol, its meaning, the default for the synthetic HRB exp
 \begin{table}[h]
 \centering
 \small
+\caption{HRB hyperparameters and sweep ranges for the synthetic environments. The defaults correspond to the synthetic rows of Table~\ref{tab:main}; the sweeps populate the sensitivity tables in Appendix~\ref{app:experiments}.}
+\label{tab:app-impl-hparams}
 \begin{tabular}{llll}
 \toprule
 Symbol & Meaning & Default & Sweep \\
@@ -8501,8 +8648,7 @@ $\sigma$ & noise std (Eq.~\eqref{eq:app-impl-r}) & $0.05$ & $\{0.025, 0.05, 0.10
 $\alpha_{\mathrm{Dir}}$ & Dirichlet concentration on $w_u$ & cluster-peak & $\{0.3, 1, 3, \infty\}$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB hyperparameters and sweep ranges for the synthetic environments. The defaults correspond to the synthetic rows of Table~\ref{tab:main}; the sweeps populate the sensitivity tables in Appendix~\ref{app:experiments}.}
-\label{tab:app-impl-hparams}
+
 \end{table}
 
 HRB and its four component ablations in Section~\ref{sec:experiments} are defined as follows:
@@ -8643,6 +8789,8 @@ archive growth; gating keeps the average archive size below $K_{\max}$.
 \begin{table}[h]
 \centering
 \small
+\caption{Per-seed wall-clock and arithmetic intensity for HRB and its component ablations, averaged over the three environments. ``Inverses solved'' is the count of per-round matrix inverse calls $\widehat{A}_a^{-1}$ across all arms.}
+\label{tab:app-impl-runtime}
 \begin{tabular}{lccc}
 \toprule
 Variant & wall-clock (s/seed) & mean $|A_T|$ & inverses solved \\
@@ -8654,8 +8802,7 @@ Variant & wall-clock (s/seed) & mean $|A_T|$ & inverses solved \\
 \textnormal{HRB}               & $9.2$ & $15.7$ & $\sim N_u T \bar K$ \\
 \bottomrule
 \end{tabular}
-\caption{Per-seed wall-clock and arithmetic intensity for HRB and its component ablations, averaged over the three environments. ``Inverses solved'' is the count of per-round matrix inverse calls $\widehat{A}_a^{-1}$ across all arms.}
-\label{tab:app-impl-runtime}
+
 \end{table}
 
 \subsection{Reproducibility and scope}
@@ -8728,6 +8875,8 @@ Table~\ref{tab:app-mean-reward-sweeps} reports $\bar{\mathcal{V}}_T(e,v)$ with o
 \begin{table}[h]
 \centering
 \small
+\caption{Mean realized routed value $\bar{\mathcal{V}}_T(e,v)$ for HRB and its component ablations, per environment $e$ and variant $v$.}
+\label{tab:app-mean-reward-sweeps}
 \begin{tabular}{lccccc}
 \toprule
 Env & HRB & HRB-NR & HRB-NF & HRB-NU & HRB-1 \\
@@ -8737,8 +8886,7 @@ workspace  & $0.699$ & $0.557$ & $0.658$ & $0.687$ & $0.566$ \\
 support    & $0.816$ & $0.598$ & $0.760$ & $0.795$ & $0.579$ \\
 \bottomrule
 \end{tabular}
-\caption{Mean realized routed value $\bar{\mathcal{V}}_T(e,v)$ for HRB and its component ablations, per environment $e$ and variant $v$.}
-\label{tab:app-mean-reward-sweeps}
+
 \end{table}
 
 The variant-wise routing effect is
@@ -8866,6 +9014,12 @@ The initial-archive per-cluster numbers in the HRB experiments (averaged across 
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
+\caption{Initial-archive heterogeneity in the HRB experiments: signed
+per-cluster contribution relative to the population static value.
+The population-weighted average of these entries equals
+\(\Delta_{\mathrm{route}}(A_1)\); an individual contribution need not be
+nonnegative.}
+\label{tab:app-per-cluster}
 \begin{tabular}{llcc}
 \toprule
 Env & cluster $g$ & $\Delta_{\mathrm{route}}(A_1;g)$ & seed std \\
@@ -8884,12 +9038,7 @@ support    & 1 & $0.44$ & $0.05$ \\
 support    & 2 & $0.04$ & $0.07$ \\
 \bottomrule
 \end{tabular}
-\caption{Initial-archive heterogeneity in the HRB experiments: signed
-per-cluster contribution relative to the population static value.
-The population-weighted average of these entries equals
-\(\Delta_{\mathrm{route}}(A_1)\); an individual contribution need not be
-nonnegative.}
-\label{tab:app-per-cluster}
+
 \end{table}
 
 Thus \(\Delta_{\mathrm{route}}(A_1)\) is the population-weighted average of
@@ -8934,6 +9083,10 @@ under HRB.
 \begin{table}[h]
 \centering
 \small
+\caption{HRB noise-scale sweep in general. As \(\sigma\) grows, the logged
+observed-reward residual grows and the observed margin shrinks. This does not
+test the theoretical dominance condition under clipped rewards.}
+\label{tab:app-sigma-sweep}
 \begin{tabular}{ccccc}
 \toprule
 $\sigma$ & $\bar L_T^{\mathrm{obs}}$ & $\bar G_T$ & observed margin & $\bar{\mathcal V}_T^{\mathrm{obs}}$ \\
@@ -8944,10 +9097,7 @@ $0.100$ & $0.062$ & $0.057$ & $0.275$ & $0.844$ \\
 $0.200$ & $0.118$ & $0.064$ & $0.226$ & $0.795$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB noise-scale sweep in general. As \(\sigma\) grows, the logged
-observed-reward residual grows and the observed margin shrinks. This does not
-test the theoretical dominance condition under clipped rewards.}
-\label{tab:app-sigma-sweep}
+
 \end{table}
 
 The observed margin remains positive in all four cells and roughly halves
@@ -8974,6 +9124,9 @@ By construction, $V_{\mathrm{static}}(A_1)$ is non-decreasing in $K$ because $A_
 \begin{table}[h]
 \centering
 \small
+\caption{HRB archive-size sweep in general. The structural routing gain grows with
+the archive, as does the observed-reward residual.}
+\label{tab:app-K-sweep}
 \begin{tabular}{ccccc}
 \toprule
 $K$ & $V_{\mathrm{static}}(A_1)$ & $\Delta_{\mathrm{route}}(A_1)$ & $\bar L_T^{\mathrm{obs}}$ & $\bar{\mathcal V}_T^{\mathrm{obs}}$ \\
@@ -8984,9 +9137,7 @@ $12$ & $0.570$ & $0.280$ & $0.036$ & $0.864$ \\
 $24$ & $0.583$ & $0.341$ & $0.058$ & $0.913$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB archive-size sweep in general. The structural routing gain grows with
-the archive, as does the observed-reward residual.}
-\label{tab:app-K-sweep}
+
 \end{table}
 
 In this sweep, most of the gain from a larger archive appears in $\Delta_{\mathrm{route}}(A_1)$ rather than in $V_{\mathrm{static}}(A_1)$.
@@ -9006,6 +9157,12 @@ distribution and clusters become indistinguishable.
 \begin{table}[h]
 \centering
 \small
+\caption{HRB user-heterogeneity sweep over Dirichlet concentration. As
+\(\alpha_{\mathrm{Dir}}\to\infty\),
+\(\Delta_{\mathrm{route}}(A_1)\to0\), while the observed margin becomes
+negative. The \(\alpha_{\mathrm{Dir}}=\infty\) row uses a uniform \(w_u\), the structural
+equality case of Lemma~\ref{lem:1}.}
+\label{tab:app-dirichlet}
 \begin{tabular}{cccc}
 \toprule
 \(\alpha_{\mathrm{Dir}}\) & $\Delta_{\mathrm{route}}(A_1)$ & $\bar L_T^{\mathrm{obs}}$ & observed margin \\
@@ -9018,12 +9175,7 @@ $10.0$ & $0.022$ & $0.031$ & $+0.042$ \\
 $\infty$ & $0.000$ & $0.030$ & $-0.030$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB user-heterogeneity sweep over Dirichlet concentration. As
-\(\alpha_{\mathrm{Dir}}\to\infty\),
-\(\Delta_{\mathrm{route}}(A_1)\to0\), while the observed margin becomes
-negative. The \(\alpha_{\mathrm{Dir}}=\infty\) row uses a uniform \(w_u\), the structural
-equality case of Lemma~\ref{lem:1}.}
-\label{tab:app-dirichlet}
+
 \end{table}
 
 The \(\alpha_{\mathrm{Dir}}=\infty\) row is the empirical version of the
@@ -9060,6 +9212,8 @@ Numerical results are summarized in Table~\ref{tab:app-ctx-type}.
 \begin{table}[h]
 \centering
 \small
+\caption{HRB context-encoding sensitivity in a separate tuning study. Concat outperforms the two simpler encodings on routed value and on cumulative regret against the per-round oracle, and triggers fewer reflections because high-gap failures are rarer.}
+\label{tab:app-ctx-type}
 \begin{tabular}{lccc}
 \toprule
 encoding & $\bar{\mathcal{V}}_T$ & final cum.\ regret & final $|A_T|$ \\
@@ -9069,8 +9223,7 @@ onehot   & $0.834$ & $22.5$ & $19.7$ \\
 concat   & $0.882$ & $11.5$ & $15.7$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB context-encoding sensitivity in a separate tuning study. Concat outperforms the two simpler encodings on routed value and on cumulative regret against the per-round oracle, and triggers fewer reflections because high-gap failures are rarer.}
-\label{tab:app-ctx-type}
+
 \end{table}
 
 The qualitative ordering is consistent across all reported metrics.
@@ -9114,6 +9267,11 @@ Table~\ref{tab:app-reflection-sweep} reports the realized end-of-horizon archive
 \begin{table}[h]
 \centering
 \small
+\caption{HRB reflection-trigger sweep on general, with HRB-NF as the
+no-reflection reference. The \((0.15,20)\) setting is
+near the best observed routed value. Ungated reflection saturates the archive
+cap and raises the observed-reward residual.}
+\label{tab:app-reflection-sweep}
 \begin{tabular}{lcccc}
 \toprule
 $(\tau,\kappa)$ & mean $|A_T|$ & $\bar G_T$ & $\bar L_T^{\mathrm{obs}}$ & $\bar{\mathcal V}_T^{\mathrm{obs}}$ \\
@@ -9126,11 +9284,7 @@ $(0.30,40)$   & $12.2$ & $0.018$ & $0.032$ & $0.836$ \\
 HRB-NF       & $12.0$ & $0.000$ & $0.030$ & $0.812$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB reflection-trigger sweep on general, with HRB-NF as the
-no-reflection reference. The \((0.15,20)\) setting is
-near the best observed routed value. Ungated reflection saturates the archive
-cap and raises the observed-reward residual.}
-\label{tab:app-reflection-sweep}
+
 \end{table}
 
 The numbers illustrate Lemma~\ref{lem:3}: gating reduces useless mutations.
@@ -9175,6 +9329,10 @@ Where an assumption is not identified by the experimental protocol (e.g.\ Theore
 \begin{table}[h]
 \centering
 \small
+\caption{Theorem-to-diagnostic map for the HRB synthetic experiments. The observed-reward accounting identity is
+algebraic but differs from Theorem~\ref{thm:decomp} under clipped rewards.
+Theorem~\ref{thm:specialist} is vacuous for the oracle-assisted proposer.}
+\label{tab:app-coverage-sweeps}
 \begin{tabular}{lll}
 \toprule
 Claim & Diagnostic & Status \\
@@ -9189,10 +9347,7 @@ Cor.~\ref{cor:plugin} (plug-in) & \S\ref{app:sigma-sweep} & not tested \\
 Thm.~\ref{thm:specialist} (specialist) & oracle reflection & vacuous as stated \\
 \bottomrule
 \end{tabular}
-\caption{Theorem-to-diagnostic map for the HRB synthetic experiments. The observed-reward accounting identity is
-algebraic but differs from Theorem~\ref{thm:decomp} under clipped rewards.
-Theorem~\ref{thm:specialist} is vacuous for the oracle-assisted proposer.}
-\label{tab:app-coverage-sweeps}
+
 \end{table}
 
 \subsection{Scope of the synthetic experiments}
@@ -9289,6 +9444,11 @@ fact.
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
+\caption{Observed-reward accounting for HRB and its component ablations. The
+observed residual uses \(m_t-r_t\), not \(m_t-\mu(U,a_t)\). The displayed
+\(|\rho_{\mathrm{obs}}|\) is at most \(1.5\times10^{-3}\) because the entries
+are rounded.}
+\label{tab:app-decomp-full}
 \begin{tabular}{llcccccc}
 \toprule
 Env & Variant & $\widehat V_{\mathrm{static}}(A_1)$ & $\widehat\Delta_{\mathrm{route}}(A_1)$ & $\widehat{\bar G}_T$ & $\widehat{\bar L}_T^{\mathrm{obs}}$ & $\widehat{\bar{\mathcal V}}_T^{\mathrm{obs}}$ & $|\rho_{\mathrm{obs}}|$ \\
@@ -9315,11 +9475,7 @@ Env & Variant & $\widehat V_{\mathrm{static}}(A_1)$ & $\widehat\Delta_{\mathrm{r
  & \textnormal{HRB-1}         & $0.579$ & $0.000$ & $0.000$ & $0.060$ & $0.519$ & $0.000$ \\
 \bottomrule
 \end{tabular}
-\caption{Observed-reward accounting for HRB and its component ablations. The
-observed residual uses \(m_t-r_t\), not \(m_t-\mu(U,a_t)\). The displayed
-\(|\rho_{\mathrm{obs}}|\) is at most \(1.5\times10^{-3}\) because the entries
-are rounded.}
-\label{tab:app-decomp-full}
+
 \end{table}
 
 \subsection{Per-seed results for the \textnormal{HRB} variant}
@@ -9334,6 +9490,8 @@ observed-reward residual, and the observed routed value for the
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
+\caption{Per-seed decomposition for the \textnormal{HRB} variant. Across-seed standard deviations are at most $4\times 10^{-3}$ for every column.}
+\label{tab:app-perseed}
 \begin{tabular}{llccccc}
 \toprule
 Env & Seed & $\widehat V_{\mathrm{static}}$ & $\widehat\Delta_{\mathrm{route}}$ & $\widehat{\bar G}_T$ & $\widehat{\bar L}_T^{\mathrm{obs}}$ & $\widehat{\bar{\mathcal V}}_T^{\mathrm{obs}}$ \\
@@ -9360,8 +9518,7 @@ Env & Seed & $\widehat V_{\mathrm{static}}$ & $\widehat\Delta_{\mathrm{route}}$ 
  & 4 & $0.577$ & $0.215$ & $0.061$ & $0.037$ & $0.816$ \\
 \bottomrule
 \end{tabular}
-\caption{Per-seed decomposition for the \textnormal{HRB} variant. Across-seed standard deviations are at most $4\times 10^{-3}$ for every column.}
-\label{tab:app-perseed}
+
 \end{table}
 
 \subsection{Per-cluster heterogeneity decomposition}
@@ -9392,6 +9549,12 @@ Table~\ref{tab:app-cluster} reports \(C_g(A_1)\) for each cluster.
 \begin{table}[h]
 \centering
 \small
+\caption{Initial-archive heterogeneity in the HRB experiments: signed
+per-cluster contributions relative to the population static value, with descriptive paired-seed spreads from
+Eq.~\eqref{eq:app-tab-spread}.
+These rows do not test the within-cluster equality condition in
+Proposition~\ref{prop:1}.}
+\label{tab:app-cluster}
 \begin{tabular}{llcc}
 \toprule
 Env & Cluster $g$ & $C_g(A_1)$ & descriptive spread \\
@@ -9413,12 +9576,7 @@ Env & Cluster $g$ & $C_g(A_1)$ & descriptive spread \\
  & $2$ & $0.03$ & $[-0.02, 0.08]$ \\
 \bottomrule
 \end{tabular}
-\caption{Initial-archive heterogeneity in the HRB experiments: signed
-per-cluster contributions relative to the population static value, with descriptive paired-seed spreads from
-Eq.~\eqref{eq:app-tab-spread}.
-These rows do not test the within-cluster equality condition in
-Proposition~\ref{prop:1}.}
-\label{tab:app-cluster}
+
 \end{table}
 
 \subsection{Per-seed final cumulative regret}
@@ -9445,6 +9603,10 @@ satisfy.
 \begin{table}[h]
 \centering
 \small
+\caption{Per-seed cumulative observed-reward residual for HRB. The implied
+\(T\widehat{\bar L}_T^{\mathrm{obs}}\) is \(10.8\), \(12.9\), and \(11.7\)
+for the three environments, up to reporting-rounding.}
+\label{tab:app-regret}
 \begin{tabular}{lcccccc}
 \toprule
 Env & seed 0 & seed 1 & seed 2 & seed 3 & seed 4 & mean $\pm$ std \\
@@ -9454,10 +9616,7 @@ Env & seed 0 & seed 1 & seed 2 & seed 3 & seed 4 & mean $\pm$ std \\
 \texttt{support}                 & $11.41$ & $11.99$ & $11.71$ & $12.35$ & $10.92$ & $11.68 \pm 0.49$ \\
 \bottomrule
 \end{tabular}
-\caption{Per-seed cumulative observed-reward residual for HRB. The implied
-\(T\widehat{\bar L}_T^{\mathrm{obs}}\) is \(10.8\), \(12.9\), and \(11.7\)
-for the three environments, up to reporting-rounding.}
-\label{tab:app-regret}
+
 \end{table}
 
 \subsection{Final regret across ablations}
@@ -9473,6 +9632,9 @@ Table~\ref{tab:app-decomp-full}.
 \begin{table}[h]
 \centering
 \small
+\caption{Per-seed cumulative observed-reward residual for HRB and its component ablations. Each
+entry is averaged across the \(N_u=8\) users for that seed.}
+\label{tab:app-regret-abl}
 \begin{tabular}{llccccc}
 \toprule
 Env & Variant & seed 0 & seed 1 & seed 2 & seed 3 & seed 4 \\
@@ -9499,9 +9661,7 @@ Env & Variant & seed 0 & seed 1 & seed 2 & seed 3 & seed 4 \\
  & \textnormal{HRB-1}         & $17.81$ & $18.45$ & $18.10$ & $18.62$ & $18.02$ \\
 \bottomrule
 \end{tabular}
-\caption{Per-seed cumulative observed-reward residual for HRB and its component ablations. Each
-entry is averaged across the \(N_u=8\) users for that seed.}
-\label{tab:app-regret-abl}
+
 \end{table}
 
 \subsection{Reflection diagnostics}
@@ -9513,6 +9673,10 @@ Table~\ref{tab:app-reflection} summarises the reflection bookkeeping under the \
 \begin{table}[h]
 \centering
 \small
+\caption{Reflection diagnostics for the \textnormal{HRB} variant. The TTFS column
+does not test Theorem~\ref{thm:specialist}, because the runs do not estimate its
+fixed-threshold repair probability \(q_\epsilon\).}
+\label{tab:app-reflection}
 \begin{tabular}{lcccc}
 \toprule
 Env & mean reflections & beneficial-child frac. & mean $|A_T|$ & TTFS (rounds) \\
@@ -9522,10 +9686,7 @@ Env & mean reflections & beneficial-child frac. & mean $|A_T|$ & TTFS (rounds) \
 \texttt{support}   & $5.1 \pm 0.3$ & $0.35$ & $13.4 \pm 0.5$ & $0.35 \pm 0.4$ \\
 \bottomrule
 \end{tabular}
-\caption{Reflection diagnostics for the \textnormal{HRB} variant. The TTFS column
-does not test Theorem~\ref{thm:specialist}, because the runs do not estimate its
-fixed-threshold repair probability \(q_\epsilon\).}
-\label{tab:app-reflection}
+
 \end{table}
 
 \subsection{Ungated reflection diagnostics}
@@ -9540,6 +9701,9 @@ Table~\ref{tab:app-ungated} compares HRB with HRB (ungated), showing that the ar
 \begin{table}[h]
 \centering
 \small
+\caption{HRB versus HRB (ungated). Removing the reflection gate grows the archive
+and raises the observed-reward residual.}
+\label{tab:app-ungated}
 \begin{tabular}{llccc}
 \toprule
 Env & Variant & mean $|A_T|$ & $\widehat{\bar{\mathcal V}}_T^{\mathrm{obs}}$ & $\widehat{\bar L}_T^{\mathrm{obs}}$ \\
@@ -9557,9 +9721,7 @@ Env & Variant & mean $|A_T|$ & $\widehat{\bar{\mathcal V}}_T^{\mathrm{obs}}$ & $
  & HRB (ungated) & $19.7$ & $0.781$ & $0.074$ \\
 \bottomrule
 \end{tabular}
-\caption{HRB versus HRB (ungated). Removing the reflection gate grows the archive
-and raises the observed-reward residual.}
-\label{tab:app-ungated}
+
 \end{table}
 
 \subsection{Ablation effect sizes across five seeds}
@@ -9583,6 +9745,10 @@ bootstrap percentile range. With five paired observations, we do not report a
 \begin{table}[h]
 \centering
 \small
+\caption{Paired-seed reward differences between HRB and its four component ablations. The percentile ranges
+summarize resampling of five seeds and are not confidence intervals or
+significance tests.}
+\label{tab:app-bootstrap}
 \begin{tabular}{llcc}
 \toprule
 Env & HRB comparison & $\widehat\Delta$ & bootstrap percentile range \\
@@ -9606,10 +9772,7 @@ Env & HRB comparison & $\widehat\Delta$ & bootstrap percentile range \\
  & vs.\ \textnormal{HRB-1}         & $+0.297$ & $[0.288, 0.306]$ \\
 \bottomrule
 \end{tabular}
-\caption{Paired-seed reward differences between HRB and its four component ablations. The percentile ranges
-summarize resampling of five seeds and are not confidence intervals or
-significance tests.}
-\label{tab:app-bootstrap}
+
 \end{table}
 
 \subsection{Per-user routed value}
@@ -9621,6 +9784,8 @@ Table~\ref{tab:app-peruser} reports per-user $\widehat{\bar{\mathcal V}}_T$ for 
 \begin{table}[h]
 \centering
 \small
+\caption{Per-user, per-seed $\widehat{\bar{\mathcal V}}_T$ in the \texttt{general} environment under the \textnormal{HRB} variant. Per-user variance is dominated by the cluster index $g(u)$.}
+\label{tab:app-peruser}
 \begin{tabular}{lcccccccc}
 \toprule
 Seed & u0 & u1 & u2 & u3 & u4 & u5 & u6 & u7 \\
@@ -9632,8 +9797,7 @@ Seed & u0 & u1 & u2 & u3 & u4 & u5 & u6 & u7 \\
 4 & $0.882$ & $0.866$ & $0.872$ & $0.853$ & $0.875$ & $0.881$ & $0.866$ & $0.862$ \\
 \bottomrule
 \end{tabular}
-\caption{Per-user, per-seed $\widehat{\bar{\mathcal V}}_T$ in the \texttt{general} environment under the \textnormal{HRB} variant. Per-user variance is dominated by the cluster index $g(u)$.}
-\label{tab:app-peruser}
+
 \end{table}
 
 \clearpage

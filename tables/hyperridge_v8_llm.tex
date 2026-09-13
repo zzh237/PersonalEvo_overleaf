@@ -3,6 +3,8 @@
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
+\caption{Real-LLM preference evaluation on $600$ held-out cases. Primary frozen-policy accuracy under the blinded judge, averaged over five routing-order seeds. Pointwise $95\%$ intervals use a topic/distance-stratified preference-question-group bootstrap over $200$ groups. They condition on development data and one generated answer per case/candidate; the seeds are not independent LLM generations. Validation-best static uses full validation rewards, whereas the learned routers receive selected training feedback.}
+\label{tab:llm-prefeval}
 \begin{tabular}{lcc}
 \toprule
 Method & Accuracy (\%) & 95\% interval \\
@@ -22,6 +24,4 @@ HRD & 67.50 & $[63.63,\,71.14]$ \\
 HRP & 67.47 & $[63.60,\,71.13]$ \\
 \bottomrule
 \end{tabular}
-\caption{Real-LLM preference evaluation on $600$ held-out cases. Primary frozen-policy accuracy under the blinded judge, averaged over five routing-order seeds. Pointwise $95\%$ intervals use a topic/distance-stratified preference-question-group bootstrap over $200$ groups. They condition on development data and one generated answer per case/candidate; the seeds are not independent LLM generations. Validation-best static uses full validation rewards, whereas the learned routers receive selected training feedback.}
-\label{tab:llm-prefeval}
 \end{table}

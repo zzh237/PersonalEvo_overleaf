@@ -1,0 +1,17 @@
+% Generated from hash-verified frozen aggregates.
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Finite-sample HRC validation with independent calibration and a fixed routing archive. Means and standard deviations use five seeds at each calibration size; $d=2$, $m=1280$, $K=12$, and $T=2000$. The deterministic bound is $\sqrt{1+\varepsilon_*}B_{T,0}^{\rm cal}$; $Nm$ is the modeled calibration-observation count and unit opportunity-cost charge, not an LLM-call count. Gaussian calibration is simulated through exact sufficient statistics. The conservative calibration cost precludes a cost-advantage claim.}
+\label{tab:hrc-validation}
+\begin{tabular}{lccccc}
+\toprule
+$N$ & $Nm/10^6$ & $\rho_\Omega$ & $\varepsilon_*$ & $\sum_t L_t$ & Bound \\
+\midrule
+32768 & $41.94$ & $0.0243\pm0.0009$ & $0.7505$ & $73.6\pm24.5$ & $3153.8$ \\
+131072 & $167.77$ & $0.0116\pm0.0001$ & $0.3731$ & $39.0\pm13.0$ & $1873.5$ \\
+524288 & $671.09$ & $0.0064\pm0.0004$ & $0.1864$ & $32.0\pm11.2$ & $1561.8$ \\
+\bottomrule
+\end{tabular}
+\end{table}
