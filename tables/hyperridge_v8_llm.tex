@@ -1,0 +1,27 @@
+% Generated from hash-verified frozen aggregates.
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+Method & Accuracy (\%) & 95\% interval \\
+\midrule
+Direct & 33.00 & $[29.17,\,36.67]$ \\
+Reminder & 70.33 & $[66.17,\,74.33]$ \\
+Constraint check & 69.67 & $[65.33,\,73.83]$ \\
+TF-IDF retrieval & 56.83 & $[52.33,\,61.33]$ \\
+Validation-best static & 81.33 & $[78.00,\,84.67]$ \\
+Uniform & 64.67 & $[61.30,\,67.83]$ \\
+Noncontextual UCB & 81.33 & $[78.00,\,84.67]$ \\
+HRB-NF (initial archive) & 66.87 & $[63.00,\,70.70]$ \\
+HRB & 77.47 & $[74.27,\,80.57]$ \\
+HRB (ungated) & 77.47 & $[74.27,\,80.57]$ \\
+HRS & 67.50 & $[63.63,\,71.14]$ \\
+HRD & 67.50 & $[63.63,\,71.14]$ \\
+HRP & 67.47 & $[63.60,\,71.13]$ \\
+\bottomrule
+\end{tabular}
+\caption{Real-LLM preference evaluation on $600$ held-out cases. Primary frozen-policy accuracy under the blinded judge, averaged over five routing-order seeds. Pointwise $95\%$ intervals use a topic/distance-stratified preference-question-group bootstrap over $200$ groups. They condition on development data and one generated answer per case/candidate; the seeds are not independent LLM generations. Validation-best static uses full validation rewards, whereas the learned routers receive selected training feedback.}
+\label{tab:llm-prefeval}
+\end{table}

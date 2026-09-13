@@ -1,0 +1,23 @@
+% Generated from hash-verified frozen aggregates.
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+Environment & Fitted covariance & Holdout covariance \\
+\midrule
+General & $0.8347\pm0.0000$ & $0.6765\pm0.0502$ \\
+Workspace & $0.7047\pm0.0000$ & $0.6272\pm0.0218$ \\
+Support & $0.7910\pm0.0000$ & $0.6398\pm0.0305$ \\
+GEPA archive & $0.6459\pm0.0007$ & $0.6156\pm0.0224$ \\
+Hermes agent & $0.7605\pm0.0007$ & $0.7384\pm0.0101$ \\
+BESPOKE & $0.6567\pm0.0000$ & $0.6729\pm0.0074$ \\
+PAHF shopping & $0.6013\pm0.0010$ & $0.6104\pm0.0281$ \\
+PAHF embodied & $0.7566\pm0.0003$ & -- \\
+PrefEval & $0.6098\pm0.0005$ & $0.6382\pm0.0128$ \\
+\bottomrule
+\end{tabular}
+\caption{Auxiliary covariance diagnostics from the configured suite. Selected mean reward with standard deviation across five seeds. Fitted covariance uses the complete reward matrix and is not HRK. Holdout covariance uses reserve candidates but does not implement the HRC theorem. The PAHF embodied holdout is inapplicable because no reserve candidates remain; the dash is not an imputed result.}
+\label{tab:hyper-aux-covariance}
+\end{table}

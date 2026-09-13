@@ -1,0 +1,23 @@
+% Generated from hash-verified frozen aggregates.
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccc}
+\toprule
+Environment & Static & HRB & HRD & HRP \\
+\midrule
+General & $0.5784\pm0.0000$ & $0.8058\pm0.0009$ & $0.8388\pm0.0046$ & $0.8386\pm0.0043$ \\
+Workspace & $0.5848\pm0.0000$ & $0.6600\pm0.0010$ & $0.6872\pm0.0040$ & $0.6877\pm0.0038$ \\
+Support & $0.5675\pm0.0000$ & $0.7580\pm0.0015$ & $0.7975\pm0.0039$ & $0.7975\pm0.0039$ \\
+GEPA archive & $0.6487\pm0.0000$ & $0.6516\pm0.0011$ & $0.6801\pm0.0055$ & $0.6816\pm0.0042$ \\
+Hermes agent & $0.8209\pm0.0000$ & $0.7870\pm0.0014$ & $0.8460\pm0.0043$ & $0.8449\pm0.0050$ \\
+BESPOKE & $0.6604\pm0.0000$ & $0.6712\pm0.0012$ & $0.6956\pm0.0070$ & $0.6965\pm0.0078$ \\
+PAHF shopping & $0.5617\pm0.0000$ & $0.7391\pm0.0011$ & $0.7444\pm0.0038$ & $0.7333\pm0.0073$ \\
+PAHF embodied & $0.8017\pm0.0000$ & $0.7991\pm0.0003$ & $0.8960\pm0.0010$ & $0.8957\pm0.0006$ \\
+PrefEval & $0.6363\pm0.0000$ & $0.6845\pm0.0005$ & $0.7131\pm0.0033$ & $0.7139\pm0.0032$ \\
+\bottomrule
+\end{tabular}
+\caption{Configured full-method comparison. Selected mean reward $T^{-1}\sum_t\mu(U,a_t)$ with standard deviation across five seeds; higher is better. HRB, HRD, and HRP allow gated archive growth. HRB uses ridge weight $1.0$; HRD and HRP use $0.5$. All use exploration multiplier $0.8$. Unlike Table~\ref{tab:geometry-controls}, this comparison does not isolate covariance from regularization strength or archive growth.}
+\label{tab:hyper-main}
+\end{table}

@@ -1,0 +1,23 @@
+% Generated from hash-verified frozen aggregates.
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccc}
+\toprule
+Environment & HRB-NF & HRS & HRD & HRP \\
+\midrule
+General & $0.0314\pm0.0004$ & $0.0164\pm0.0007$ & $0.0164\pm0.0007$ & $0.0165\pm0.0006$ \\
+Workspace & $0.0473\pm0.0010$ & $0.0149\pm0.0015$ & $0.0149\pm0.0015$ & $0.0149\pm0.0015$ \\
+Support & $0.0400\pm0.0007$ & $0.0156\pm0.0008$ & $0.0156\pm0.0008$ & $0.0156\pm0.0008$ \\
+GEPA archive & $0.0682\pm0.0012$ & $0.0338\pm0.0089$ & $0.0330\pm0.0092$ & $0.0319\pm0.0096$ \\
+Hermes agent & $0.0784\pm0.0007$ & $0.0519\pm0.0053$ & $0.0521\pm0.0059$ & $0.0531\pm0.0064$ \\
+BESPOKE & $0.0497\pm0.0007$ & $0.0427\pm0.0042$ & $0.0419\pm0.0050$ & $0.0410\pm0.0059$ \\
+PAHF shopping & $0.1259\pm0.0010$ & $0.0516\pm0.0047$ & $0.0519\pm0.0057$ & $0.0630\pm0.0062$ \\
+PAHF embodied & $0.1256\pm0.0004$ & $0.1036\pm0.0010$ & $0.1040\pm0.0010$ & $0.1043\pm0.0006$ \\
+PrefEval & $0.0476\pm0.0004$ & $0.0137\pm0.0007$ & $0.0137\pm0.0009$ & $0.0128\pm0.0008$ \\
+\bottomrule
+\end{tabular}
+\caption{Matched geometry controls. Mean per-round exploration cost $T^{-1}\sum_t[m_t-\mu(U,a_t)]$, with standard deviation across five seeds; lower is better. All archives are fixed, all ridge weights are $0.5$, and the exploration multiplier is $0.8$. HRB-NF uses identity geometry; HRS, HRD, and HRP use scalar, diagonal, and full periodically estimated geometry. These are simulated or proxy rewards, not live benchmark executions.}
+\label{tab:geometry-controls}
+\end{table}
